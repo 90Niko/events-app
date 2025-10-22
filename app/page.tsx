@@ -18,13 +18,14 @@ export default function Page() {
       country: f.get("country"),
       event_date: f.get("event_date"), // YYYY-MM-DD
       start_time: f.get("start_time"), // HH:mm
-      end_time: f.get("end_time"), // HH:mm
+      end_time: f.get("end_time"),     // HH:mm
       status: f.get("status"),
       description: f.get("description"),
       venue_name: f.get("venue_name"),
       address_line1: f.get("address_line1"),
       timezone: f.get("timezone"),
       reservation_deadline_date: f.get("reservation_deadline_date"),
+      url_address: f.get("url_address"), // ✅ добавено поле
     };
 
     try {
@@ -94,6 +95,16 @@ export default function Page() {
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Event name" name="name" required placeholder="e.g., Autumn Flea Market" hint="Public name of the event." />
               <Field label="Organizer" name="owner" required placeholder="e.g., Naiko" hint="Who is responsible for this event." />
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* ✅ ново поле */}
+              <Field
+                label="Event URL"
+                name="url_address"
+                type="url"
+                placeholder="https://example.com/my-event"
+                hint="Public link to the event page."
+              />
             </div>
 
             {/* Date & time */}
