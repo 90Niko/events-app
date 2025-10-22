@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import LogoutButton from "@/components/LogoutButton";
 
 export default function CreatePage() {
   const router = useRouter();
@@ -30,11 +29,8 @@ export default function CreatePage() {
       end_date,
       start_time,
       end_time,
-      status: f.get("status"),
       description: f.get("description"),
-      venue_name: f.get("venue_name"),
       address_line1: f.get("address_line1"),
-      timezone: f.get("timezone"),
       reservation_deadline_date: f.get("reservation_deadline_date"),
       url_address: f.get("url_address"),
     } as any;
@@ -85,7 +81,6 @@ export default function CreatePage() {
             </h1>
             <div className="flex items-center gap-2">
               <a href="/events" className="text-sm text-slate-600 underline hover:text-slate-800">Back to events</a>
-              <LogoutButton />
             </div>
           </div>
           <p className="mt-1 text-slate-500">
@@ -114,34 +109,32 @@ export default function CreatePage() {
               <Field label="Organizer" name="owner" required placeholder="e.g., Naiko" hint="Who is responsible for this event." />
             </div>
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Field label="Event URL" name="url_address" type="url" placeholder="https://example.com/my-event" hint="Public link to the event page." />
+              <Field label="Event URL" name="url_address" type="url" required placeholder="https://example.com/my-event" hint="Public link to the event page." />
             </div>
 
             <Divider />
             <Section title="Date & time" subtitle="When your event takes place." />
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="start_datetime">Start</Label>
+                <Label htmlFor="start_datetime">Start<span className="ml-1 text-rose-500" aria-hidden>*</span></Label>
                 <input id="start_datetime" name="start_datetime" type="datetime-local" className="mt-1 block w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-800 outline-none shadow-sm placeholder:text-slate-400 ring-0 focus-visible:border-slate-300 focus-visible:ring-4 focus-visible:ring-slate-100 transition" required />
                 <p className="mt-1 text-xs text-slate-500">Select start date and time.</p>
               </div>
               <div>
-                <Label htmlFor="end_datetime">End</Label>
-                <input id="end_datetime" name="end_datetime" type="datetime-local" className="mt-1 block w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-800 outline-none shadow-sm placeholder:text-slate-400 ring-0 focus-visible:border-slate-300 focus-visible:ring-4 focus-visible:ring-slate-100 transition" />
+                <Label htmlFor="end_datetime">End<span className="ml-1 text-rose-500" aria-hidden>*</span></Label>
+                <input id="end_datetime" name="end_datetime" type="datetime-local" className="mt-1 block w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-800 outline-none shadow-sm placeholder:text-slate-400 ring-0 focus-visible:border-slate-300 focus-visible:ring-4 focus-visible:ring-slate-100 transition" required />
                 <p className="mt-1 text-xs text-slate-500">Select end date and time.</p>
               </div>
             </div>
 
             <Divider />
             <Section title="Location" subtitle="Where attendees should go." />
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <Field label="Venue" name="venue_name" placeholder="Hall A" />
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Address" name="address_line1" placeholder="Main St. 10" />
               <Field label="City" name="city" placeholder="Munich" />
             </div>
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Country" name="country" placeholder="DE" />
-              <Field label="Time zone" name="timezone" placeholder="Europe/Berlin" />
               <Field label="Reservation deadline" name="reservation_deadline_date" type="date" />
             </div>
 
@@ -152,28 +145,10 @@ export default function CreatePage() {
             </div>
 
             <Divider />
-            <div className="mt-6 flex flex-col items-start gap-3 md:flex-row">
-              <div className="w-full md:w-64">
-                <Label htmlFor="status">Status</Label>
-                <select
-                  id="status"
-                  name="status"
-                  className="mt-1 block w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-800 outline-none ring-0 shadow-sm focus-visible:border-slate-300 focus-visible:ring-4 focus-visible:ring-slate-100 transition"
-                  defaultValue=""
-                >
-                  <option value="" disabled>Choose status</option>
-                  <option value="draft">Draft</option>
-                  <option value="active">Active</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-                <p className="mt-1 text-xs text-slate-500">You can change it later.</p>
-              </div>
-
-              <div className="md:ml-auto">
-                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
-                  {submitting ? (<><Spinner /><span>Saving…</span></>) : (<span>Create event</span>)}
-                </button>
-              </div>
+            <div className="mt-6 flex items-center justify-end">
+              <button type="submit" disabled={submitting} className="btn-primary">
+                {submitting ? (<><Spinner /><span>Saving…</span></>) : (<span>Create event</span>)}
+              </button>
             </div>
           </form>
         </div>

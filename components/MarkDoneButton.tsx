@@ -27,13 +27,7 @@ export default function MarkDoneButton({ id }: { id: string | number | bigint })
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={loading}
-      className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-      title="Mark as done"
-    >
+    <button type="button" onClick={onClick} disabled={loading} className="btn-outline text-xs py-1 px-2" title="Mark as done">
       {loading ? "updating..." : "Mark done"}
     </button>
   );

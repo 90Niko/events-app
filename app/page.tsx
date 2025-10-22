@@ -91,7 +91,7 @@ export default function Page() {
               ) : null}
             </div>
             <div>
-              <button type="submit" className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white shadow-sm transition hover:bg-slate-800">
+              <button type="submit" className="btn-primary">
                 Sign in
               </button>
             </div>

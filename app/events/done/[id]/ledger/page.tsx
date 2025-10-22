@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import LedgerForm from "@/components/LedgerForm";
-import LogoutButton from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +46,6 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
           <div className="flex items-center gap-2">
             <a href="/events/done" className="text-sm text-slate-600 underline hover:text-slate-800">Back to done</a>
             <a href="/events" className="text-sm text-slate-600 underline hover:text-slate-800">Upcoming</a>
-            <LogoutButton />
           </div>
         </header>
 
@@ -81,14 +79,14 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50/50">
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3">Description</th>
-                  <th className="px-4 py-3">Amount</th>
-                  <th className="px-4 py-3">Currency</th>
-                  <th className="px-4 py-3">Payment</th>
-                  <th className="px-4 py-3">Counterparty</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Date</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Type</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Category</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Description</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Amount</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Currency</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Payment</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Counterparty</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
@@ -101,14 +99,14 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
                       : String(amt);
                   return (
                     <tr key={String(x.id)} className="hover:bg-slate-50/60">
-                      <td className="px-4 py-3 text-slate-700">{x.entry_date ? format(new Date(x.entry_date), 'yyyy-MM-dd') : '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{x.entry_type}</td>
-                      <td className="px-4 py-3 text-slate-700">{x.category ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{x.description ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{amountStr}</td>
-                      <td className="px-4 py-3 text-slate-700">{x.currency}</td>
-                      <td className="px-4 py-3 text-slate-700">{x.payment_method ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{x.counterparty ?? '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.entry_date ? format(new Date(x.entry_date), 'dd MMM yyyy') : '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.entry_type}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.category ?? '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.description ?? '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{amountStr}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.counterparty ?? '-'}</td>
                     </tr>
                   );
                 })}

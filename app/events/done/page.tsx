@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import LogoutButton from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -93,7 +92,6 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
             <div className="flex items-center gap-2">
               <a href="/events" className="text-sm text-slate-600 underline hover:text-slate-800">Upcoming</a>
               <a href="/create" className="text-sm text-slate-600 underline hover:text-slate-800">Create</a>
-              <LogoutButton />
             </div>
           </div>
         </header>
@@ -108,8 +106,8 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
             <input id="end" name="end" type="date" defaultValue={end} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
           </div>
           <div className="flex items-end gap-2">
-            <button type="submit" className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm text-white shadow-sm hover:bg-slate-800">Filter</button>
-            <a href="/events/done" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm hover:bg-slate-50">Clear</a>
+            <button type="submit" className="btn-primary">Filter</button>
+            <a href="/events/done" className="btn-outline">Clear</a>
           </div>
           <div className="md:col-span-2 flex items-end gap-3 text-sm">
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700">Income: <span className="font-semibold">{totalIncome.toFixed(2)}</span></div>
@@ -123,13 +121,13 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50/50">
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">When</th>
-                  <th className="px-4 py-3">City</th>
-                  <th className="px-4 py-3">Income</th>
-                  <th className="px-4 py-3">Expense</th>
-                  <th className="px-4 py-3">Link</th>
-                  <th className="px-4 py-3">Ledger</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Name</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">When</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">City</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Income</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Expense</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Link</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Ledger</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
@@ -140,11 +138,11 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
                   const deadline = e.reservation_deadline_date ? new Date(e.reservation_deadline_date) : null;
 
                   const startPart = eventDate
-                    ? `${format(eventDate, "yyyy-MM-dd")}${startTime ? ` ${format(startTime, "HH:mm")}` : ""}`
+                    ? `${format(eventDate, "dd MMM yyyy")}${startTime ? ` ${format(startTime, "HH:mm")}` : ""}`
                     : startTime
                     ? format(startTime, "HH:mm")
                     : "-";
-                  const endPart = endDate ? format(endDate, "yyyy-MM-dd") : "";
+                  const endPart = endDate ? format(endDate, "dd MMM yyyy") : "";
                   const whenStr = endPart ? `${startPart} - ${endPart}` : startPart;
 
                   const rawUrl = (e.url_address ?? e.url_adress ?? "").toString().trim();
@@ -154,12 +152,12 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
 
                   return (
                     <tr key={String(e.id ?? `${e.name}-${e.owner}-${e.event_date ?? Math.random()}`)} className="hover:bg-slate-50/60">
-                      <td className="px-4 py-3 font-medium text-slate-800">{e.name ?? "-"}</td>
-                      <td className="px-4 py-3 text-slate-700">{whenStr}</td>
-                      <td className="px-4 py-3 text-slate-700">{e.city ?? "-"}</td>
-                      <td className="px-4 py-3 text-slate-700">{typeof e.__income === 'number' ? e.__income.toFixed(2) : '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{typeof e.__expense === 'number' ? e.__expense.toFixed(2) : '-'}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 font-medium text-slate-800">{e.name ?? "-"}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{whenStr}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{e.city ?? "-"}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{typeof e.__income === 'number' ? e.__income.toFixed(2) : '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{typeof e.__expense === 'number' ? e.__expense.toFixed(2) : '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3">
                         {href ? (
                           <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs text-slate-700 hover:bg-slate-50" title={href}>
                             Open
@@ -168,7 +166,7 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
                           <span className="text-slate-400">-</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2 sm:px-4 sm:py-3">
                         {e.id != null ? (
                           <a href={`/events/done/${e.id}/ledger`} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs text-slate-700 hover:bg-slate-50">Manage</a>
                         ) : null}
