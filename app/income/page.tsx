@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import AddExpenseForm from "@/components/AddExpenseForm";
-import BackLink from "@/components/BackLink";
+import AddIncomeForm from "@/components/AddIncomeForm";
 import DeleteExpenseButton from "@/components/DeleteExpenseButton";
+import BackLink from "@/components/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -12,15 +12,14 @@ function toNum(v: any) {
   return Number((v?.toString?.() ?? v) ?? 0);
 }
 
-async function getExpenses(filters: { start?: string; end?: string; category?: string }) {
+async function getIncome(filters: { start?: string; end?: string; category?: string }) {
   const anyPrisma: any = prisma as any;
-
   const { start, end, category } = filters;
   const gte = start ? new Date(start) : undefined;
   const lte = end ? new Date(end) : undefined;
 
   if (anyPrisma?.eventLedger?.findMany) {
-    const where: any = { entry_type: "expense" };
+    const where: any = { entry_type: "income" };
     if (gte || lte) where.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
     if (category) where.category = { contains: category, mode: "insensitive" };
     const entries = await anyPrisma.eventLedger.findMany({
@@ -31,13 +30,12 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
     return entries as any[];
   }
 
-  // Fallback raw SQL join using parameterized template queries
   if (start && end && category) {
     const rows = await anyPrisma.$queryRaw`
       SELECT el.id, el.event_id, el.entry_type, el.category, el.description, el.amount, el.currency, el.entry_date, el.payment_method, el.counterparty, e.name AS event_name
       FROM event_ledger el
       JOIN events e ON e.id = el.event_id
-      WHERE el.entry_type = 'expense'
+      WHERE el.entry_type = 'income'
         AND el.entry_date BETWEEN ${new Date(start)} AND ${new Date(end)}
         AND el.category LIKE ${"%" + category + "%"}
       ORDER BY el.id DESC`;
@@ -48,7 +46,7 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
       SELECT el.id, el.event_id, el.entry_type, el.category, el.description, el.amount, el.currency, el.entry_date, el.payment_method, el.counterparty, e.name AS event_name
       FROM event_ledger el
       JOIN events e ON e.id = el.event_id
-      WHERE el.entry_type = 'expense'
+      WHERE el.entry_type = 'income'
         AND el.entry_date BETWEEN ${new Date(start)} AND ${new Date(end)}
       ORDER BY el.id DESC`;
     return rows as any[];
@@ -58,7 +56,7 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
       SELECT el.id, el.event_id, el.entry_type, el.category, el.description, el.amount, el.currency, el.entry_date, el.payment_method, el.counterparty, e.name AS event_name
       FROM event_ledger el
       JOIN events e ON e.id = el.event_id
-      WHERE el.entry_type = 'expense'
+      WHERE el.entry_type = 'income'
         AND el.entry_date >= ${new Date(start)}
         AND el.category LIKE ${"%" + category + "%"}
       ORDER BY el.id DESC`;
@@ -69,7 +67,7 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
       SELECT el.id, el.event_id, el.entry_type, el.category, el.description, el.amount, el.currency, el.entry_date, el.payment_method, el.counterparty, e.name AS event_name
       FROM event_ledger el
       JOIN events e ON e.id = el.event_id
-      WHERE el.entry_type = 'expense'
+      WHERE el.entry_type = 'income'
         AND el.entry_date <= ${new Date(end)}
         AND el.category LIKE ${"%" + category + "%"}
       ORDER BY el.id DESC`;
@@ -80,7 +78,7 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
       SELECT el.id, el.event_id, el.entry_type, el.category, el.description, el.amount, el.currency, el.entry_date, el.payment_method, el.counterparty, e.name AS event_name
       FROM event_ledger el
       JOIN events e ON e.id = el.event_id
-      WHERE el.entry_type = 'expense'
+      WHERE el.entry_type = 'income'
         AND el.entry_date >= ${new Date(start)}
       ORDER BY el.id DESC`;
     return rows as any[];
@@ -90,7 +88,7 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
       SELECT el.id, el.event_id, el.entry_type, el.category, el.description, el.amount, el.currency, el.entry_date, el.payment_method, el.counterparty, e.name AS event_name
       FROM event_ledger el
       JOIN events e ON e.id = el.event_id
-      WHERE el.entry_type = 'expense'
+      WHERE el.entry_type = 'income'
         AND el.entry_date <= ${new Date(end)}
       ORDER BY el.id DESC`;
     return rows as any[];
@@ -100,7 +98,7 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
       SELECT el.id, el.event_id, el.entry_type, el.category, el.description, el.amount, el.currency, el.entry_date, el.payment_method, el.counterparty, e.name AS event_name
       FROM event_ledger el
       JOIN events e ON e.id = el.event_id
-      WHERE el.entry_type = 'expense'
+      WHERE el.entry_type = 'income'
         AND el.category LIKE ${"%" + category + "%"}
       ORDER BY el.id DESC`;
     return rows as any[];
@@ -109,28 +107,28 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
     SELECT el.id, el.event_id, el.entry_type, el.category, el.description, el.amount, el.currency, el.entry_date, el.payment_method, el.counterparty, e.name AS event_name
     FROM event_ledger el
     JOIN events e ON e.id = el.event_id
-    WHERE el.entry_type = 'expense'
+    WHERE el.entry_type = 'income'
     ORDER BY el.id DESC`;
   return rows as any[];
 }
 
-export default async function ExpensesPage({ searchParams }: { searchParams: Promise<Search> }) {
+export default async function IncomePage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const start = typeof sp?.start === "string" ? sp.start : "";
   const end = typeof sp?.end === "string" ? sp.end : "";
   const category = typeof sp?.category === "string" ? sp.category : "";
   const highlightId = typeof sp?.new === "string" ? sp.new : "";
-  const entries = await getExpenses({ start, end, category });
-  // Prepare events list for adding new expenses
-  const events = await prisma.event.findMany({ select: { id: true, name: true }, orderBy: { id: "desc" } });
-  const eventOpts = events.map((e: any) => ({ id: String(e.id), name: e.name || `#${String(e.id)}` }));
-
+  const entries = await getIncome({ start, end, category });
   const total = entries.reduce((s, x: any) => s + toNum(x.amount), 0);
   const byCategory = entries.reduce((acc: Record<string, number>, x: any) => {
     const key = x.category ?? "(uncategorized)";
     acc[key] = (acc[key] ?? 0) + toNum(x.amount);
     return acc;
   }, {});
+
+  // event options for adding income
+  const events = await prisma.event.findMany({ select: { id: true, name: true }, orderBy: { id: "desc" } });
+  const eventOpts = events.map((e: any) => ({ id: String(e.id), name: e.name || `#${String(e.id)}` }));
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-slate-50 via-white to-white relative">
@@ -144,10 +142,10 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-xs text-slate-600 shadow-sm backdrop-blur">
-                <span className="inline-block h-2 w-2 rounded-full bg-rose-500" />
-                Expenses
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                Income
               </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">Company expenses</h1>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">Company income</h1>
               <p className="mt-1 text-slate-500 text-sm">Listing {entries.length} entr{entries.length === 1 ? "y" : "ies"}.</p>
             </div>
             <div className="flex items-center gap-3">
@@ -155,36 +153,36 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
               <BackLink />
             </div>
           </div>
-
-          <form className="mt-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/70 p-3 shadow-sm backdrop-blur md:grid-cols-5" method="get">
-            <div>
-              <label htmlFor="start" className="text-xs font-medium text-slate-600">Start date</label>
-              <input id="start" name="start" type="date" defaultValue={start} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
-            </div>
-            <div>
-              <label htmlFor="end" className="text-xs font-medium text-slate-600">End date</label>
-              <input id="end" name="end" type="date" defaultValue={end} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
-            </div>
-            <div>
-              <label htmlFor="category" className="text-xs font-medium text-slate-600">Category</label>
-              <input id="category" name="category" defaultValue={category} placeholder="fuel, consumables, rent..." className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
-            </div>
-            <div className="flex items-end gap-2">
-              <button type="submit" className="btn-primary">Filter</button>
-              <a href="/expenses" className="btn-outline">Clear</a>
-            </div>
-            <div className="md:col-span-2 flex flex-wrap items-end gap-2 text-sm">
-              {Object.entries(byCategory).map(([k, v]) => (
-                <span key={k} className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5">{k}: <span className="font-medium">{v.toFixed(2)}</span></span>
-              ))}
-            </div>
-          </form>
         </header>
 
+        <form className="mt-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/70 p-3 shadow-sm backdrop-blur md:grid-cols-5" method="get">
+          <div>
+            <label htmlFor="start" className="text-xs font-medium text-slate-600">Start date</label>
+            <input id="start" name="start" type="date" defaultValue={start} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
+          </div>
+          <div>
+            <label htmlFor="end" className="text-xs font-medium text-slate-600">End date</label>
+            <input id="end" name="end" type="date" defaultValue={end} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
+          </div>
+          <div>
+            <label htmlFor="category" className="text-xs font-medium text-slate-600">Category</label>
+            <input id="category" name="category" defaultValue={category} placeholder="tickets, sponsorship..." className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
+          </div>
+          <div className="flex items-end gap-2">
+            <button type="submit" className="btn-primary">Filter</button>
+            <a href="/income" className="btn-outline">Clear</a>
+          </div>
+          <div className="md:col-span-2 flex flex-wrap items-end gap-2 text-sm">
+            {Object.entries(byCategory).map(([k, v]) => (
+              <span key={k} className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5">{k}: <span className="font-medium">{v.toFixed(2)}</span></span>
+            ))}
+          </div>
+        </form>
+
         <div className="card p-4 mb-6">
-          <h2 className="text-base font-semibold text-slate-800">Add expense</h2>
+          <h2 className="text-base font-semibold text-slate-800">Add income</h2>
           <div className="mt-3">
-            <AddExpenseForm events={eventOpts} />
+            <AddIncomeForm events={eventOpts} />
           </div>
         </div>
 
@@ -217,16 +215,9 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency ?? '-'}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.counterparty ?? '-'}</td>
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">
-                      {x.id != null ? <DeleteExpenseButton id={x.id} /> : null}
-                    </td>
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.id != null ? <DeleteExpenseButton id={x.id} /> : null}</td>
                   </tr>
                 )})}
-                {entries.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-slate-500">No expenses found.</td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
@@ -235,3 +226,4 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
     </div>
   );
 }
+

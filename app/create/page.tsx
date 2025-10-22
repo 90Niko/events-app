@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import BackLink from "@/components/BackLink";
 
 export default function CreatePage() {
   const router = useRouter();
@@ -80,7 +81,7 @@ export default function CreatePage() {
               Create a new event
             </h1>
             <div className="flex items-center gap-2">
-              <a href="/events" className="text-sm text-slate-600 underline hover:text-slate-800">Back to events</a>
+              <BackLink />
             </div>
           </div>
           <p className="mt-1 text-slate-500">

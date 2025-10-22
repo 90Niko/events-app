@@ -5,7 +5,7 @@ import { useState } from "react";
 
 type EventOpt = { id: string; name: string };
 
-export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
+export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
     const f = new FormData(form);
     const eventId = String(f.get("event_id") || "");
     const payload = {
-      entry_type: "expense",
+      entry_type: "income",
       category: f.get("category") || null,
       description: f.get("description") || null,
       amount: f.get("amount"),
@@ -45,7 +45,7 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
       const j = await res.json().catch(() => ({}));
       const id = j?.id ?? j?.data?.id;
       form.reset();
-      router.push(id ? `/expenses?new=${encodeURIComponent(String(id))}` : "/expenses");
+      router.push(id ? `/income?new=${encodeURIComponent(String(id))}` : "/income");
     } catch (e: any) {
       setErr(e?.message || "Failed to save");
     } finally {
@@ -66,7 +66,7 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
       </div>
       <div>
         <label className="text-xs font-medium text-slate-600" htmlFor="category">Category</label>
-        <input id="category" name="category" placeholder="fuel, consumables, rent…" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        <input id="category" name="category" placeholder="ticket sales, sponsorship, fees…" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
       <div className="md:col-span-2">
         <label className="text-xs font-medium text-slate-600" htmlFor="description">Description</label>
@@ -89,12 +89,13 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
       </div>
       <div className="md:col-span-2">
         <label className="text-xs font-medium text-slate-600" htmlFor="counterparty">Counterparty</label>
-        <input id="counterparty" name="counterparty" placeholder="vendor" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        <input id="counterparty" name="counterparty" placeholder="client / sponsor" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
       <div className="md:col-span-6 flex items-end gap-2">
-        <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving…' : 'Add expense'}</button>
+        <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving…' : 'Add income'}</button>
         {err ? <span className="text-sm text-rose-600">{err}</span> : null}
       </div>
     </form>
   );
 }
+

@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import LedgerForm from "@/components/LedgerForm";
+import DeleteExpenseButton from "@/components/DeleteExpenseButton";
+import BackLink from "@/components/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -44,8 +46,7 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
             <p className="mt-1 text-slate-500 text-sm">Event ID: {id}</p>
           </div>
           <div className="flex items-center gap-2">
-            <a href="/events/done" className="text-sm text-slate-600 underline hover:text-slate-800">Back to done</a>
-            <a href="/events" className="text-sm text-slate-600 underline hover:text-slate-800">Upcoming</a>
+            <BackLink />
           </div>
         </header>
 
@@ -87,6 +88,7 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Currency</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Payment</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Counterparty</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
@@ -107,6 +109,7 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.counterparty ?? '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.id != null ? <DeleteExpenseButton id={x.id} /> : null}</td>
                     </tr>
                   );
                 })}

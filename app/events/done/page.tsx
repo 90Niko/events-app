@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
+import BackLink from "@/components/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -90,8 +91,7 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
               <p className="mt-1 text-slate-500 text-sm">Listing {events.length} entr{events.length === 1 ? "y" : "ies"}.</p>
             </div>
             <div className="flex items-center gap-2">
-              <a href="/events" className="text-sm text-slate-600 underline hover:text-slate-800">Upcoming</a>
-              <a href="/create" className="text-sm text-slate-600 underline hover:text-slate-800">Create</a>
+              <BackLink />
             </div>
           </div>
         </header>

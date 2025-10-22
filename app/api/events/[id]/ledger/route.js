@@ -40,9 +40,13 @@ export async function POST(req, { params }) {
       });
       return new Response(JSON.stringify(safe(created)), { status: 201, headers: { "Content-Type": "application/json" } });
     }
-    // Fallback raw insert
-    const created = await anyPrisma.$queryRaw`INSERT INTO event_ledger (event_id, entry_type, category, description, amount, currency, entry_date, payment_method, counterparty) VALUES (${bid}, ${b.entry_type}, ${b.category ?? null}, ${b.description ?? null}, ${b.amount}, ${b.currency ?? 'EUR'}, ${b.entry_date ? new Date(b.entry_date) : new Date()}, ${b.payment_method ?? null}, ${b.counterparty ?? null})`;
-    return new Response(JSON.stringify(safe(created)), { status: 201, headers: { "Content-Type": "application/json" } });
+    // Fallback raw insert + fetch last insert id
+    await anyPrisma.$executeRaw`INSERT INTO event_ledger (event_id, entry_type, category, description, amount, currency, entry_date, payment_method, counterparty)
+      VALUES (${bid}, ${b.entry_type}, ${b.category ?? null}, ${b.description ?? null}, ${b.amount}, ${b.currency ?? 'EUR'}, ${b.entry_date ? new Date(b.entry_date) : new Date()}, ${b.payment_method ?? null}, ${b.counterparty ?? null})`;
+    const inserted = await anyPrisma.$queryRaw`SELECT LAST_INSERT_ID() AS id`;
+    const idRow = Array.isArray(inserted) ? inserted[0] : inserted;
+    const payload = { id: idRow?.id };
+    return new Response(JSON.stringify(safe(payload)), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e?.message || e) }), { status: 400 });
   }

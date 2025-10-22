@@ -23,3 +23,17 @@ export async function PATCH(req, { params }) {
     headers: { "Content-Type": "application/json" },
   });
 }
+
+export async function DELETE(req, { params }) {
+  const { id } = (await params) || {};
+  if (!id) return new Response(JSON.stringify({ error: "Missing id" }), { status: 400 });
+  try {
+    const deleted = await prisma.event.delete({ where: { id: BigInt(id) } });
+    return new Response(JSON.stringify(safe(deleted)), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: String(e?.message || e) }), { status: 400 });
+  }
+}

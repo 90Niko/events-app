@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import MarkDoneButton from "@/components/MarkDoneButton";
+import DeleteEventButton from "@/components/DeleteEventButton";
+import BackLink from "@/components/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -50,10 +52,9 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">All events</h1>
               <p className="mt-1 text-slate-500 text-sm">Listing {events.length} entr{events.length === 1 ? "y" : "ies"}.</p>
             </div>
-            <div className="flex items-center gap-2">
-              <a href="/events/done" className="text-sm text-slate-600 underline hover:text-slate-800">Done</a>
-              <a href="/create" className="text-sm text-slate-600 underline hover:text-slate-800">Create</a>
-            </div>
+          <div className="flex items-center gap-2">
+            <BackLink />
+          </div>
           </div>
 
           <form className="mt-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/70 p-3 shadow-sm backdrop-blur md:grid-cols-4" method="get">
@@ -134,9 +135,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                           <span className="text-slate-400">-</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3">
-                        {e.id != null ? <MarkDoneButton id={e.id} /> : null}
-                      </td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 flex items-center gap-2">{e.id != null ? <MarkDoneButton id={e.id} /> : null}{e.id != null ? <DeleteEventButton id={e.id} /> : null}</td>
                     </tr>
                   );
                 })}
@@ -153,3 +152,5 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     </div>
   );
 }
+
+

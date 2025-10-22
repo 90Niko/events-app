@@ -18,9 +18,15 @@ export default function NavBar() {
   return (
     <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/70 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <a href="/events" className="text-sm font-semibold text-slate-800 hover:opacity-80">Events App</a>
-          <a href="/expenses" className="text-sm text-slate-600 underline hover:text-slate-800">Expenses</a>
+          <nav className="flex items-center gap-3 text-sm">
+            <a href="/create" className="text-slate-600 underline hover:text-slate-800">New Event</a>
+            <a href="/events" className="text-slate-600 underline hover:text-slate-800">Upcoming Events</a>
+            <a href="/events/done" className="text-slate-600 underline hover:text-slate-800">Past Events</a>           
+            <a href="/expenses" className="text-slate-600 underline hover:text-slate-800">Expenses</a>
+            <a href="/income" className="text-slate-600 underline hover:text-slate-800">Income</a>
+          </nav>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-sm text-slate-600">
@@ -38,3 +44,5 @@ export default function NavBar() {
     </div>
   );
 }
+
+
