@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+
+export async function GET() {
+  const rows = await prisma.event.findMany({ orderBy: { event_date: "asc" } });
+  return NextResponse.json(rows);
+}
+
+export async function POST(req: Request) {
+  const body = await req.json();
+
+  // пример: минимални полета (добави валидации според нуждите ти)
+  const created = await prisma.event.create({
+    data: {
+      name: body.name,
+      owner: body.owner,
+      description: body.description ?? null,
+      venue_name: body.venue_name ?? null,
+      address_line1: body.address_line1 ?? null,
+      city: body.city ?? null,
+      country: body.country ?? null,
+      event_date: body.event_date ? new Date(body.event_date) : null, // 'YYYY-MM-DD'
+      start_time: body.start_time ? new Date(`1970-01-01T${body.start_time}:00`) : null, // 'HH:mm'
+      end_time: body.end_time ? new Date(`1970-01-01T${body.end_time}:00`) : null,       // 'HH:mm'
+      timezone: body.timezone ?? null,
+      reservation_deadline_date: body.reservation_deadline_date ? new Date(body.reservation_deadline_date) : null,
+      status: body.status ?? null,
+    },
+  });
+
+  return NextResponse.json(created, { status: 201 });
+}
