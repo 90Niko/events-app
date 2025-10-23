@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
@@ -28,6 +31,11 @@
     "postcss": "^8.5.6",
     "prisma": "^6.17.1",
     "tailwindcss": "^4.1.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.4",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "happy-dom": "^15.11.7"
   }
 }
