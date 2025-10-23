@@ -15,16 +15,21 @@ export async function POST(req) {
     const date = b?.purchase_date;
     const purchasedBy = b?.purchased_by;
     const payment = b?.payment_method;
-    if (!price || !weight || !date || !purchasedBy || !payment) {
+    const priceNum = Number(price);
+    const weightNum = Number(weight);
+    if (!price && price !== 0 || !weight && weight !== 0 || !date || !purchasedBy || !payment) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
+    }
+    if (Number.isNaN(priceNum) || Number.isNaN(weightNum) || priceNum < 0 || weightNum <= 0) {
+      return new Response(JSON.stringify({ error: "Invalid price/weight values" }), { status: 400 });
     }
 
     const anyPrisma = prisma;
     if (anyPrisma?.stock?.create) {
       const created = await anyPrisma.stock.create({
         data: {
-          price_per_kg: price,
-          weight_kg: weight,
+          price_per_kg: priceNum,
+          weight_kg: weightNum,
           purchase_date: new Date(date),
           description: b?.description ?? null,
           purchased_by: purchasedBy,
@@ -44,4 +49,3 @@ export async function POST(req) {
     return new Response(JSON.stringify({ error: String(e?.message || e) }), { status: 400 });
   }
 }
-

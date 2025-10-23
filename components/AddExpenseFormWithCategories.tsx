@@ -16,17 +16,22 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
     const form = e.currentTarget as HTMLFormElement;
     const f = new FormData(form);
     const eventId = String(f.get("event_id") || "");
+    const amountNum = Number(f.get("amount") ?? 0);
     const payload = {
       entry_type: "expense",
       category: f.get("category") || null,
       description: f.get("description") || null,
-      amount: f.get("amount"),
+      amount: amountNum,
       currency: f.get("currency") || "EUR",
       payment_method: f.get("payment_method") || null,
       counterparty: f.get("counterparty") || null,
     } as any;
     if (!eventId) {
       setErr("Please select an event.");
+      return;
+    }
+    if (amountNum < 0) {
+      setErr("Amount must be non-negative.");
       return;
     }
     try {
@@ -80,7 +85,7 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
       </div>
       <div>
         <label className="text-xs font-medium text-slate-600" htmlFor="amount">Amount</label>
-        <input id="amount" name="amount" type="number" step="0.01" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        <input id="amount" name="amount" type="number" step="0.01" min="0" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
       <div>
         <label className="text-xs font-medium text-slate-600" htmlFor="currency">Currency</label>

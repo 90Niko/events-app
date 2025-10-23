@@ -23,6 +23,10 @@ export async function POST(req, { params }) {
   const bid = BigInt(id);
   const b = await req.json().catch(() => ({}));
   try {
+    const amountNum = Number(b?.amount ?? 0);
+    if (Number.isNaN(amountNum) || amountNum < 0) {
+      return new Response(JSON.stringify({ error: "Amount must be non-negative" }), { status: 400 });
+    }
     const anyPrisma = prisma;
     if (anyPrisma?.eventLedger?.create) {
       const created = await anyPrisma.eventLedger.create({
@@ -31,7 +35,7 @@ export async function POST(req, { params }) {
           entry_type: b.entry_type,
           category: b.category ?? null,
           description: b.description ?? null,
-          amount: b.amount,
+          amount: amountNum,
           currency: b.currency ?? 'EUR',
           entry_date: b.entry_date ? new Date(b.entry_date) : new Date(),
           payment_method: b.payment_method ?? null,
@@ -42,7 +46,7 @@ export async function POST(req, { params }) {
     }
     // Fallback raw insert + fetch last insert id
     await anyPrisma.$executeRaw`INSERT INTO event_ledger (event_id, entry_type, category, description, amount, currency, entry_date, payment_method, counterparty)
-      VALUES (${bid}, ${b.entry_type}, ${b.category ?? null}, ${b.description ?? null}, ${b.amount}, ${b.currency ?? 'EUR'}, ${b.entry_date ? new Date(b.entry_date) : new Date()}, ${b.payment_method ?? null}, ${b.counterparty ?? null})`;
+      VALUES (${bid}, ${b.entry_type}, ${b.category ?? null}, ${b.description ?? null}, ${amountNum}, ${b.currency ?? 'EUR'}, ${b.entry_date ? new Date(b.entry_date) : new Date()}, ${b.payment_method ?? null}, ${b.counterparty ?? null})`;
     const inserted = await anyPrisma.$queryRaw`SELECT LAST_INSERT_ID() AS id`;
     const idRow = Array.isArray(inserted) ? inserted[0] : inserted;
     const payload = { id: idRow?.id };

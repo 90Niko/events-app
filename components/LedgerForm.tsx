@@ -18,11 +18,15 @@ export default function LedgerForm({ eventId }: { eventId: string }) {
       entry_type: f.get("entry_type"),
       category: f.get("category") || null,
       description: f.get("description") || null,
-      amount: f.get("amount"),
+      amount: Number(f.get("amount") ?? 0),
       currency: f.get("currency") || "EUR",
       payment_method: f.get("payment_method") || null,
       counterparty: f.get("counterparty") || null,
     } as any;
+    if (Number.isNaN(payload.amount) || payload.amount < 0) {
+      setErr("Amount must be non-negative.");
+      return;
+    }
     try {
       setLoading(true);
       const req = fetch(`/api/events/${eventId}/ledger`, {
@@ -85,7 +89,7 @@ export default function LedgerForm({ eventId }: { eventId: string }) {
       </div>
       <div className="md:col-span-1">
         <label className="text-xs font-medium text-slate-600" htmlFor="amount">Amount</label>
-        <input id="amount" name="amount" type="number" step="0.01" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        <input id="amount" name="amount" type="number" step="0.01" min="0" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
       <div className="md:col-span-1">
         <label className="text-xs font-medium text-slate-600" htmlFor="currency">Currency</label>

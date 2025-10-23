@@ -94,11 +94,11 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
           <form className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-6" method="get">
             <div>
               <label htmlFor="start" className="text-xs font-medium text-slate-600">Start date</label>
-              <input id="start" name="start" type="date" defaultValue={start} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
+              <input id="start" name="start" type="date" defaultValue={start} max={end || undefined} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
             </div>
             <div>
               <label htmlFor="end" className="text-xs font-medium text-slate-600">End date</label>
-              <input id="end" name="end" type="date" defaultValue={end} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
+              <input id="end" name="end" type="date" defaultValue={end} min={start || undefined} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
             </div>
             <div>
               <label htmlFor="purchased_by" className="text-xs font-medium text-slate-600">Purchased by</label>

@@ -13,17 +13,24 @@ export default function AddStockForm({ users }: { users: string[] }) {
     setErr(null);
     const form = e.currentTarget as HTMLFormElement;
     const f = new FormData(form);
+    const priceNum = Number(f.get("price_per_kg") ?? 0);
+    const weightNum = Number(f.get("weight_kg") ?? 0);
     const payload = {
-      price_per_kg: f.get("price_per_kg"),
-      weight_kg: f.get("weight_kg"),
+      price_per_kg: priceNum,
+      weight_kg: weightNum,
       purchase_date: f.get("purchase_date"),
       description: f.get("description") || null,
       purchased_by: f.get("purchased_by"),
       payment_method: f.get("payment_method"),
     } as any;
 
-    if (!payload.price_per_kg || !payload.weight_kg || !payload.purchase_date || !payload.purchased_by || !payload.payment_method) {
+    if (!payload.price_per_kg && payload.price_per_kg !== 0 || !payload.weight_kg && payload.weight_kg !== 0 || !payload.purchase_date || !payload.purchased_by || !payload.payment_method) {
       setErr("Please fill all required fields.");
+      return;
+    }
+
+    if (priceNum < 0 || weightNum <= 0) {
+      setErr("Price must be >= 0 and weight > 0.");
       return;
     }
 
@@ -55,11 +62,11 @@ export default function AddStockForm({ users }: { users: string[] }) {
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-6">
       <div>
         <label htmlFor="price_per_kg" className="text-xs font-medium text-slate-600">Price/kg (EUR)</label>
-        <input id="price_per_kg" name="price_per_kg" type="number" step="0.01" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        <input id="price_per_kg" name="price_per_kg" type="number" step="0.01" min="0" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
       <div>
         <label htmlFor="weight_kg" className="text-xs font-medium text-slate-600">Weight (kg)</label>
-        <input id="weight_kg" name="weight_kg" type="number" step="0.001" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        <input id="weight_kg" name="weight_kg" type="number" step="0.001" min="0.001" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
       <div>
         <label htmlFor="purchase_date" className="text-xs font-medium text-slate-600">Purchase date</label>
