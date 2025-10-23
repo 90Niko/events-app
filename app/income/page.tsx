@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import AddIncomeForm from "@/components/AddIncomeForm";
+import AddIncomeForm from "@/components/AddIncomeFormCategories";
 import DeleteExpenseButton from "@/components/DeleteExpenseButton";
 import BackLink from "@/components/BackLink";
 
@@ -155,35 +155,43 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
           </div>
         </header>
 
-        <form className="mt-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/70 p-3 shadow-sm backdrop-blur md:grid-cols-5" method="get">
-          <div>
-            <label htmlFor="start" className="text-xs font-medium text-slate-600">Start date</label>
-            <input id="start" name="start" type="date" defaultValue={start} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
-          </div>
-          <div>
-            <label htmlFor="end" className="text-xs font-medium text-slate-600">End date</label>
-            <input id="end" name="end" type="date" defaultValue={end} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
-          </div>
-          <div>
-            <label htmlFor="category" className="text-xs font-medium text-slate-600">Category</label>
-            <input id="category" name="category" defaultValue={category} placeholder="tickets, sponsorship..." className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
-          </div>
-          <div className="flex items-end gap-2">
-            <button type="submit" className="btn-primary">Filter</button>
-            <a href="/income" className="btn-outline">Clear</a>
-          </div>
-          <div className="md:col-span-2 flex flex-wrap items-end gap-2 text-sm">
-            {Object.entries(byCategory).map(([k, v]) => (
-              <span key={k} className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5">{k}: <span className="font-medium">{v.toFixed(2)}</span></span>
-            ))}
-          </div>
-        </form>
-
         <div className="card p-4 mb-6">
           <h2 className="text-base font-semibold text-slate-800">Add income</h2>
           <div className="mt-3">
             <AddIncomeForm events={eventOpts} />
           </div>
+        </div>
+
+        <div className="card p-4 mb-6">
+          <h2 className="text-base font-semibold text-slate-800">Filter</h2>
+          <form className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/70 p-3 shadow-sm backdrop-blur md:grid-cols-5" method="get">
+            <div>
+              <label htmlFor="start" className="text-xs font-medium text-slate-600">Start date</label>
+              <input id="start" name="start" type="date" defaultValue={start} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
+            </div>
+            <div>
+              <label htmlFor="end" className="text-xs font-medium text-slate-600">End date</label>
+              <input id="end" name="end" type="date" defaultValue={end} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
+            </div>
+            <div>
+              <label htmlFor="category" className="text-xs font-medium text-slate-600">Category</label>
+              <select id="category" name="category" defaultValue={category} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                <option value="">All</option>
+                <option value="Mystery box">Mystery box</option>
+                <option value="Online">Online</option>
+                <option value="Event">Event</option>
+              </select>
+            </div>
+            <div className="flex items-end gap-2">
+              <button type="submit" className="btn-primary">Filter</button>
+              <a href="/income" className="btn-outline">Clear</a>
+            </div>
+            <div className="md:col-span-2 flex flex-wrap items-end gap-2 text-sm">
+              {Object.entries(byCategory).map(([k, v]) => (
+                <span key={k} className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5">{k}: <span className="font-medium">{v.toFixed(2)}</span></span>
+              ))}
+            </div>
+          </form>
         </div>
 
         <div className="card overflow-hidden">
@@ -226,4 +234,3 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
     </div>
   );
 }
-

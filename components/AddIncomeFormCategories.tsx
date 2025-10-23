@@ -66,7 +66,12 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
       </div>
       <div>
         <label className="text-xs font-medium text-slate-600" htmlFor="category">Category</label>
-        <select id="category" name="category" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">\n          <option value="">Select category…</option>\n          <option value="Mystery box">Mystery box</option>\n          <option value="Online">Online</option>\n          <option value="Event">Event</option>\n        </select>
+        <select id="category" name="category" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
+          <option value="">Select categoryâ€¦</option>
+          <option value="Mystery box">Mystery box</option>
+          <option value="Online">Online</option>
+          <option value="Event">Event</option>
+        </select>
       </div>
       <div className="md:col-span-2">
         <label className="text-xs font-medium text-slate-600" htmlFor="description">Description</label>
@@ -98,5 +103,4 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
     </form>
   );
 }
-
 

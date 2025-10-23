@@ -53,3 +53,21 @@ model EventLedger {
   @@index([event_id, entry_date], name: "idx_event_entrydate")
   @@map("event_ledger")
 }
+
+
+model Stock {
+  id             BigInt   @id @default(autoincrement())
+  price_per_kg   Decimal  @db.Decimal(10, 2)
+  weight_kg      Decimal  @db.Decimal(10, 3)
+  purchase_date  DateTime @db.Date
+  description    String?  @db.Text
+  purchased_by   String   @db.VarChar(120)
+  payment_method String   @db.VarChar(50)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@index([purchase_date], name: "idx_purchase_date")
+  @@index([purchased_by], name: "idx_purchased_by")
+  @@index([payment_method], name: "idx_payment_method")
+  @@map("stock")
+}

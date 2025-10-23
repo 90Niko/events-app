@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import AddExpenseForm from "@/components/AddExpenseForm";
+import AddExpenseForm from "@/components/AddExpenseFormWithCategories";
 import BackLink from "@/components/BackLink";
 import DeleteExpenseButton from "@/components/DeleteExpenseButton";
 
@@ -114,6 +114,18 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
   return rows as any[];
 }
 
+async function getStockTotal() {
+  const anyPrisma: any = prisma as any;
+  if (anyPrisma?.stock?.findMany) {
+    const rows = await anyPrisma.stock.findMany({ select: { price_per_kg: true, weight_kg: true } });
+    const total = rows.reduce((s: number, r: any) => s + toNum(r.price_per_kg) * toNum(r.weight_kg), 0);
+    return total;
+  }
+  const rows = await anyPrisma.$queryRaw`SELECT SUM(price_per_kg * weight_kg) AS total FROM stock`;
+  const t = Array.isArray(rows) ? (rows[0]?.total ?? 0) : (rows as any)?.total ?? 0;
+  return Number(t ?? 0);
+}
+
 export default async function ExpensesPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const start = typeof sp?.start === "string" ? sp.start : "";
@@ -121,6 +133,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const category = typeof sp?.category === "string" ? sp.category : "";
   const highlightId = typeof sp?.new === "string" ? sp.new : "";
   const entries = await getExpenses({ start, end, category });
+  const stockTotal = await getStockTotal();
   // Prepare events list for adding new expenses
   const events = await prisma.event.findMany({ select: { id: true, name: true }, orderBy: { id: "desc" } });
   const eventOpts = events.map((e: any) => ({ id: String(e.id), name: e.name || `#${String(e.id)}` }));
@@ -150,13 +163,25 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">Company expenses</h1>
               <p className="mt-1 text-slate-500 text-sm">Listing {entries.length} entr{entries.length === 1 ? "y" : "ies"}.</p>
             </div>
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
               <div className="text-sm text-slate-700">Total: <span className="font-semibold">{total.toFixed(2)}</span></div>
+              <div className="text-sm text-slate-700">Stock spent: <span className="font-semibold">{stockTotal.toFixed(2)} EUR</span></div>
               <BackLink />
             </div>
           </div>
 
-          <form className="mt-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/70 p-3 shadow-sm backdrop-blur md:grid-cols-5" method="get">
+          
+        </header>
+        <div className="card p-4 mb-6">
+          <h2 className="text-base font-semibold text-slate-800">Add expense</h2>
+          <div className="mt-3">
+            <AddExpenseForm events={eventOpts} />
+          </div>
+        </div>
+
+        <div className="card p-4 mb-6">
+          <h2 className="text-base font-semibold text-slate-800">Filter</h2>
+          <form className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/70 p-3 shadow-sm backdrop-blur md:grid-cols-5" method="get">
             <div>
               <label htmlFor="start" className="text-xs font-medium text-slate-600">Start date</label>
               <input id="start" name="start" type="date" defaultValue={start} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
@@ -167,7 +192,13 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
             </div>
             <div>
               <label htmlFor="category" className="text-xs font-medium text-slate-600">Category</label>
-              <input id="category" name="category" defaultValue={category} placeholder="fuel, consumables, rent..." className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none shadow-sm" />
+              <select id="category" name="category" defaultValue={category} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                <option value="">All</option>
+                <option value="Food">Food</option>
+                <option value="Fuel">Fuel</option>
+                <option value="Rent">Rent</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div className="flex items-end gap-2">
               <button type="submit" className="btn-primary">Filter</button>
@@ -179,13 +210,6 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
               ))}
             </div>
           </form>
-        </header>
-
-        <div className="card p-4 mb-6">
-          <h2 className="text-base font-semibold text-slate-800">Add expense</h2>
-          <div className="mt-3">
-            <AddExpenseForm events={eventOpts} />
-          </div>
         </div>
 
         <div className="card overflow-hidden">

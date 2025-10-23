@@ -7,6 +7,7 @@ export default function LedgerForm({ eventId }: { eventId: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [entryType, setEntryType] = useState<"income" | "expense">("income");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,14 +49,35 @@ export default function LedgerForm({ eventId }: { eventId: string }) {
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-6">
       <div className="md:col-span-1">
         <label className="text-xs font-medium text-slate-600" htmlFor="entry_type">Type</label>
-        <select id="entry_type" name="entry_type" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
+        <select
+          id="entry_type"
+          name="entry_type"
+          value={entryType}
+          onChange={(e) => setEntryType(e.currentTarget.value as any)}
+          className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm"
+        >
           <option value="income">Income</option>
           <option value="expense">Expense</option>
         </select>
       </div>
       <div className="md:col-span-1">
         <label className="text-xs font-medium text-slate-600" htmlFor="category">Category</label>
-        <input id="category" name="category" placeholder="fees, rent..." className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        {entryType === "expense" ? (
+          <select id="category" name="category" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
+            <option value="">Select category…</option>
+            <option value="Food">Food</option>
+            <option value="Fuel">Fuel</option>
+            <option value="Rent">Rent</option>
+            <option value="Other">Other</option>
+          </select>
+        ) : (
+          <select id="category" name="category" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
+            <option value="">Select category…</option>
+            <option value="Mystery box">Mystery box</option>
+            <option value="Online">Online</option>
+            <option value="Event">Event</option>
+          </select>
+        )}
       </div>
       <div className="md:col-span-2">
         <label className="text-xs font-medium text-slate-600" htmlFor="description">Description</label>

@@ -49,7 +49,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                 <span className="inline-block h-2 w-2 rounded-full bg-indigo-500" />
                 Events
               </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">All events</h1>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">Upcoming events</h1>
               <p className="mt-1 text-slate-500 text-sm">Listing {events.length} entr{events.length === 1 ? "y" : "ies"}.</p>
             </div>
           <div className="flex items-center gap-2">
