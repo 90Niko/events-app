@@ -123,7 +123,6 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
             <div className="md:col-span-6 flex items-end gap-2">
               <button type="submit" className="btn-primary">Filter</button>
               <a href="/stock" className="btn-outline">Clear</a>
-              <div className="ml-auto text-sm text-slate-700">Total weight: <span className="font-medium">{totalWeight.toFixed(3)} kg</span>, Total cost: <span className="font-medium">{totalCost.toFixed(2)} EUR</span></div>
             </div>
           </form>
         </div>

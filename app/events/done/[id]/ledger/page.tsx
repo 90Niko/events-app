@@ -87,7 +87,7 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Amount</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Currency</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Payment</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3">Counterparty</th>
+
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Action</th>
                 </tr>
               </thead>
@@ -108,7 +108,7 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{amountStr}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.counterparty ?? '-'}</td>
+
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.id != null ? <DeleteExpenseButton id={x.id} /> : null}</td>
                     </tr>
                   );

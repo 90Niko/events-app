@@ -13,7 +13,7 @@ export async function GET(req, { params }) {
   const anyPrisma = prisma;
   const rows = anyPrisma?.eventLedger?.findMany
     ? await anyPrisma.eventLedger.findMany({ where: { event_id: bid }, orderBy: { entry_date: "desc" } })
-    : await anyPrisma.$queryRaw`SELECT id, event_id, entry_type, category, description, amount, currency, entry_date, payment_method, counterparty, created_at, updated_at FROM event_ledger WHERE event_id = ${bid} ORDER BY entry_date DESC`;
+    : await anyPrisma.$queryRaw`SELECT id, event_id, entry_type, category, description, amount, currency, entry_date, payment_method, created_at, updated_at FROM event_ledger WHERE event_id = ${bid} ORDER BY entry_date DESC`;
   return new Response(JSON.stringify(safe(rows)), { status: 200, headers: { "Content-Type": "application/json" } });
 }
 
@@ -39,14 +39,13 @@ export async function POST(req, { params }) {
           currency: b.currency ?? 'EUR',
           entry_date: b.entry_date ? new Date(b.entry_date) : new Date(),
           payment_method: b.payment_method ?? null,
-          counterparty: b.counterparty ?? null,
         },
       });
       return new Response(JSON.stringify(safe(created)), { status: 201, headers: { "Content-Type": "application/json" } });
     }
     // Fallback raw insert + fetch last insert id
-    await anyPrisma.$executeRaw`INSERT INTO event_ledger (event_id, entry_type, category, description, amount, currency, entry_date, payment_method, counterparty)
-      VALUES (${bid}, ${b.entry_type}, ${b.category ?? null}, ${b.description ?? null}, ${amountNum}, ${b.currency ?? 'EUR'}, ${b.entry_date ? new Date(b.entry_date) : new Date()}, ${b.payment_method ?? null}, ${b.counterparty ?? null})`;
+    await anyPrisma.$executeRaw`INSERT INTO event_ledger (event_id, entry_type, category, description, amount, currency, entry_date, payment_method)
+      VALUES (${bid}, ${b.entry_type}, ${b.category ?? null}, ${b.description ?? null}, ${amountNum}, ${b.currency ?? 'EUR'}, ${b.entry_date ? new Date(b.entry_date) : new Date()}, ${b.payment_method ?? null})`;
     const inserted = await anyPrisma.$queryRaw`SELECT LAST_INSERT_ID() AS id`;
     const idRow = Array.isArray(inserted) ? inserted[0] : inserted;
     const payload = { id: idRow?.id };
@@ -55,3 +54,4 @@ export async function POST(req, { params }) {
     return new Response(JSON.stringify({ error: String(e?.message || e) }), { status: 400 });
   }
 }
+

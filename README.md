@@ -61,7 +61,7 @@ Datasource: MySQL (`DATABASE_URL`). Prisma models map to existing tables. Raw SQ
   - status, url_address
 - `EventLedger` (maps to `event_ledger`)
   - id, event_id (FK), entry_type (income|expense), category, description
-  - amount (Decimal), currency (EUR default), entry_date (Date), payment_method, counterparty
+  - amount (Decimal), currency (EUR default), entry_date (Date), payment_method
   - created_at, updated_at
 - `Stock` (maps to `stock`)
   - id, price_per_kg (Decimal 10,2), weight_kg (Decimal 10,3), purchase_date (Date)
@@ -159,3 +159,4 @@ npm run start
 - Edit stock/ledger entries; export CSV.
 - More dashboards and charts.
 - i18n (Bulgarian/English switch) across UI.
+

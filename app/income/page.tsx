@@ -1,7 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import AddIncomeForm from "@/components/AddIncomeFormCategories";
+import PrintButton from "@/components/PrintButton";
+import ShareMenuBulk from "@/components/ShareMenuBulk";
 import DeleteExpenseButton from "@/components/DeleteExpenseButton";
+import ShareMenu from "@/components/ShareMenu";
 import BackLink from "@/components/BackLink";
 
 export const dynamic = "force-dynamic";
@@ -149,7 +152,6 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
               <p className="mt-1 text-slate-500 text-sm">Listing {entries.length} entr{entries.length === 1 ? "y" : "ies"}.</p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-sm text-slate-700">Total: <span className="font-semibold">{total.toFixed(2)}</span></div>
               <BackLink />
             </div>
           </div>
@@ -182,15 +184,14 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
                 <option value="Event">Event</option>
               </select>
             </div>
-            <div className="flex items-end gap-2">
+            <div className="md:col-span-2 flex flex-wrap items-end gap-2 justify-end w-full">
               <button type="submit" className="btn-primary">Filter</button>
               <a href="/income" className="btn-outline">Clear</a>
+              <ShareMenuBulk kind="income" params={{ start, end, category }} />
             </div>
-            <div className="md:col-span-2 flex flex-wrap items-end gap-2 text-sm">
-              {Object.entries(byCategory).map(([k, v]) => (
-                <span key={k} className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5">{k}: <span className="font-medium">{v.toFixed(2)}</span></span>
-              ))}
-            </div>
+            {/* Removed by-category chips from filter */}
+            
+            {/* Removed by-category chips from filter */}
           </form>
         </div>
 
@@ -206,7 +207,8 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Amount</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Currency</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Payment</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3">Counterparty</th>
+
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Share</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Action</th>
                 </tr>
               </thead>
@@ -222,7 +224,8 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.amount).toFixed(2)}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency ?? '-'}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.counterparty ?? '-'}</td>
+
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700"><ShareMenu kind="income" id={String(x.id ?? "")} /></td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.id != null ? <DeleteExpenseButton id={x.id} /> : null}</td>
                   </tr>
                 )})}
@@ -234,3 +237,4 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
     </div>
   );
 }
+

@@ -23,7 +23,7 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
       amount: f.get("amount"),
       currency: f.get("currency") || "EUR",
       payment_method: f.get("payment_method") || null,
-      counterparty: f.get("counterparty") || null,
+      
     } as any;
     if (!eventId) {
       setErr("Please select an event.");
@@ -87,10 +87,7 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
           <option value="card">Card</option>
         </select>
       </div>
-      <div className="md:col-span-2">
-        <label className="text-xs font-medium text-slate-600" htmlFor="counterparty">Counterparty</label>
-        <input id="counterparty" name="counterparty" placeholder="client / sponsor" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
-      </div>
+      
       <div className="md:col-span-6 flex items-end gap-2">
         <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving…' : 'Add income'}</button>
         {err ? <span className="text-sm text-rose-600">{err}</span> : null}
@@ -98,5 +95,6 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
     </form>
   );
 }
+
 
 

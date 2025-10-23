@@ -46,3 +46,31 @@ body {
     @apply text-sm font-medium text-slate-700;
   }
 }
+
+/* Print (invoice) styles */
+@media print {
+  .no-print { display: none !important; }
+  nav, .sticky, .btn, .btn-primary, .btn-outline { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+}
+
+.print-invoice {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 12px;
+}
+.invoice-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.invoice-meta { margin-bottom: 16px; }
+.invoice-table { width: 100%; border-collapse: collapse; }
+.invoice-table th, .invoice-table td { border: 1px solid #e2e8f0; padding: 6px 8px; }
+.invoice-table thead th { background: #f1f5f9; text-align: left; }
+.invoice-table tfoot td { background: #f8fafc; }
+.text-right { text-align: right; }
+.invoice-footer { margin-top: 12px; font-size: 11px; color: #64748b; }

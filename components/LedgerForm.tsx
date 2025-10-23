@@ -21,7 +21,6 @@ export default function LedgerForm({ eventId }: { eventId: string }) {
       amount: Number(f.get("amount") ?? 0),
       currency: f.get("currency") || "EUR",
       payment_method: f.get("payment_method") || null,
-      counterparty: f.get("counterparty") || null,
     } as any;
     if (Number.isNaN(payload.amount) || payload.amount < 0) {
       setErr("Amount must be non-negative.");
@@ -103,10 +102,7 @@ export default function LedgerForm({ eventId }: { eventId: string }) {
           <option value="card">Card</option>
         </select>
       </div>
-      <div className="md:col-span-2">
-        <label className="text-xs font-medium text-slate-600" htmlFor="counterparty">Counterparty</label>
-        <input id="counterparty" name="counterparty" placeholder="vendor/client" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
-      </div>
+      
       <div className="md:col-span-6 flex items-end gap-2">
         <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving…' : 'Add entry'}</button>
         {err ? <span className="text-sm text-rose-600">{err}</span> : null}

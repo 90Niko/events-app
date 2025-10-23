@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import AddExpenseForm from "@/components/AddExpenseFormWithCategories";
+import PrintButton from "@/components/PrintButton";
+import ShareMenuBulk from "@/components/ShareMenuBulk";
 import BackLink from "@/components/BackLink";
 import DeleteExpenseButton from "@/components/DeleteExpenseButton";
+import ShareMenu from "@/components/ShareMenu";
 
 export const dynamic = "force-dynamic";
 
@@ -200,15 +203,13 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                 <option value="Other">Other</option>
               </select>
             </div>
-            <div className="flex items-end gap-2">
+            <div className="md:col-span-2 flex flex-wrap items-end gap-2 justify-end w-full">
               <button type="submit" className="btn-primary">Filter</button>
               <a href="/expenses" className="btn-outline">Clear</a>
+              <ShareMenuBulk kind="expense" params={{ start, end, category }} />
             </div>
-            <div className="md:col-span-2 flex flex-wrap items-end gap-2 text-sm">
-              {Object.entries(byCategory).map(([k, v]) => (
-                <span key={k} className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5">{k}: <span className="font-medium">{v.toFixed(2)}</span></span>
-              ))}
-            </div>
+            {/* Removed by-category chips from filter */}
+            
           </form>
         </div>
 
@@ -224,7 +225,8 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Amount</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Currency</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Payment</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3">Counterparty</th>
+
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Share</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Action</th>
                 </tr>
               </thead>
@@ -240,7 +242,8 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.amount).toFixed(2)}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency ?? '-'}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.counterparty ?? '-'}</td>
+
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700"><ShareMenu kind="expense" id={String(x.id ?? "")} /></td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">
                       {x.id != null ? <DeleteExpenseButton id={x.id} /> : null}
                     </td>
@@ -248,7 +251,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                 )})}
                 {entries.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-slate-500">No expenses found.</td>
+                    <td colSpan={9} className="px-4 py-8 text-center text-slate-500">No expenses found.</td>
                   </tr>
                 )}
               </tbody>
@@ -259,3 +262,4 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
     </div>
   );
 }
+
