@@ -7,6 +7,7 @@ export default function AddStockForm({ users }: { users: string[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [unit, setUnit] = useState<'kg' | 'pcs'>('kg');
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -19,7 +20,11 @@ export default function AddStockForm({ users }: { users: string[] }) {
       price_per_kg: priceNum,
       weight_kg: weightNum,
       purchase_date: f.get("purchase_date"),
-      description: f.get("description") || null,
+      description: (() => {
+        const raw = (f.get("description") as string | null) || "";
+        const tag = `[unit:${unit}]`;
+        return `${tag} ${raw}`.trim();
+      })(),
       purchased_by: f.get("purchased_by"),
       payment_method: f.get("payment_method"),
     } as any;
@@ -30,7 +35,7 @@ export default function AddStockForm({ users }: { users: string[] }) {
     }
 
     if (priceNum < 0 || weightNum <= 0) {
-      setErr("Price must be >= 0 and weight > 0.");
+      setErr(unit === 'kg' ? "Price must be >= 0 and weight > 0." : "Price must be >= 0 and quantity > 0.");
       return;
     }
 
@@ -61,12 +66,19 @@ export default function AddStockForm({ users }: { users: string[] }) {
   return (
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-6">
       <div>
-        <label htmlFor="price_per_kg" className="text-xs font-medium text-slate-600">Price/kg (EUR)</label>
+        <label htmlFor="unit" className="text-xs font-medium text-slate-600">Unit</label>
+        <select id="unit" name="unit" value={unit} onChange={(e) => setUnit(e.target.value as 'kg' | 'pcs')} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
+          <option value="kg">Kilograms (kg)</option>
+          <option value="pcs">Pieces (pcs)</option>
+        </select>
+      </div>
+      <div>
+        <label htmlFor="price_per_kg" className="text-xs font-medium text-slate-600">{unit === 'kg' ? 'Price/kg (EUR)' : 'Price/pc (EUR)'}</label>
         <input id="price_per_kg" name="price_per_kg" type="number" step="0.01" min="0" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
       <div>
-        <label htmlFor="weight_kg" className="text-xs font-medium text-slate-600">Weight (kg)</label>
-        <input id="weight_kg" name="weight_kg" type="number" step="0.001" min="0.001" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        <label htmlFor="weight_kg" className="text-xs font-medium text-slate-600">{unit === 'kg' ? 'Weight (kg)' : 'Quantity (pcs)'}</label>
+        <input id="weight_kg" name="weight_kg" type="number" step={unit === 'kg' ? 0.001 : 1} min={unit === 'kg' ? 0.001 : 1} required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
       <div>
         <label htmlFor="purchase_date" className="text-xs font-medium text-slate-600">Purchase date</label>

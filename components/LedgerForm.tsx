@@ -8,6 +8,11 @@ export default function LedgerForm({ eventId }: { eventId: string }) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [entryType, setEntryType] = useState<"income" | "expense">("income");
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid SSR rendering to prevent hydration mismatches in some environments
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,7 +45,7 @@ export default function LedgerForm({ eventId }: { eventId: string }) {
         throw new Error(j?.error || "Failed to save");
       }
       formEl?.reset();
-      router.push("/events/done");
+      router.refresh();
     } catch (e: any) {
       setErr(e?.message || "Failed to save");
     } finally {

@@ -4,25 +4,61 @@ import BackLink from "@/components/BackLink";
 
 export const dynamic = "force-dynamic";
 
+function parseDateParam(v?: string): Date | null {
+  if (!v) return null;
+  const t = String(v).trim();
+  if (!t) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+    const [y, m, d] = t.split("-").map((x) => Number(x));
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(t)) {
+    const [d, m, y] = t.split("/").map((x) => Number(x));
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+  const dt = new Date(t);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
+function endOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
+}
+
 async function getDoneEvents({ start, end }: { start?: string; end?: string }) {
   const rows = await prisma.event.findMany({
     where: { status: "done" },
     orderBy: { id: "desc" },
   });
+  // Filter events by date range if provided: include events whose
+  // [event_start .. event_end] overlaps with [start .. end]
+  const startDate = parseDateParam(start);
+  const endDate = end ? endOfDay(parseDateParam(end) as Date) : null;
+  const filteredRows = rows.filter((e: any) => {
+    if (!startDate && !endDate) return true;
+    const eventStart: Date | null = e?.event_date ? new Date(e.event_date) : null;
+    // Prefer explicit end date if present; otherwise fall back to event start
+    const eventEnd: Date | null = (e as any)?.end_date ? new Date((e as any).end_date) : (eventStart ?? null);
+    if (!eventStart && !eventEnd) return false;
+    const s = eventStart ?? eventEnd!;
+    const t = eventEnd ?? eventStart!;
+    if (startDate && endDate) return t >= startDate && s <= endDate; // overlap
+    if (startDate) return (t ?? s) >= startDate;
+    if (endDate) return (s ?? t) <= endDate;
+    return true;
+  });
   const anyPrisma: any = prisma as any;
   const enriched = await Promise.all(
-    rows.map(async (e: any) => {
+    filteredRows.map(async (e: any) => {
       let income = 0;
       let expense = 0;
-      // Parse date range if provided
-      const gte = start ? new Date(start) : undefined;
-      const lte = end ? new Date(end) : undefined;
+      // Compute totals for the whole event (not filtered by date)
       if (anyPrisma?.eventLedger?.aggregate) {
         const inc = await anyPrisma.eventLedger.aggregate({
           where: {
             event_id: e.id,
             entry_type: 'income',
-            ...(gte || lte ? { entry_date: { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) } } : {}),
           },
           _sum: { amount: true },
         });
@@ -30,29 +66,18 @@ async function getDoneEvents({ start, end }: { start?: string; end?: string }) {
           where: {
             event_id: e.id,
             entry_type: 'expense',
-            ...(gte || lte ? { entry_date: { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) } } : {}),
           },
           _sum: { amount: true },
         });
-        income = Number(inc?._sum?.amount ?? 0);
-        expense = Number(exp?._sum?.amount ?? 0);
+        const toNum = (v: any) => Number((v?.toString?.() ?? v) ?? 0);
+        income = toNum(inc?._sum?.amount);
+        expense = toNum(exp?._sum?.amount);
       } else {
         // fallback raw sums
         let incRows: any[] = [];
         let expRows: any[] = [];
-        if (start && end) {
-          incRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'income' AND entry_date BETWEEN ${new Date(start)} AND ${new Date(end)}`;
-          expRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'expense' AND entry_date BETWEEN ${new Date(start)} AND ${new Date(end)}`;
-        } else if (start) {
-          incRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'income' AND entry_date >= ${new Date(start)}`;
-          expRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'expense' AND entry_date >= ${new Date(start)}`;
-        } else if (end) {
-          incRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'income' AND entry_date <= ${new Date(end)}`;
-          expRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'expense' AND entry_date <= ${new Date(end)}`;
-        } else {
-          incRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'income'`;
-          expRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'expense'`;
-        }
+        incRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'income'`;
+        expRows = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'expense'`;
         const inc = incRows?.[0];
         const exp = expRows?.[0];
         income = Number((inc?.total ?? 0).toString?.() ?? inc?.total ?? 0);
@@ -110,9 +135,9 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
             <a href="/events/done" className="btn-outline">Clear</a>
           </div>
           <div className="md:col-span-2 flex items-end gap-3 text-sm">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700">Income: <span className="font-semibold">{totalIncome.toFixed(2)}</span></div>
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">Expense: <span className="font-semibold">{totalExpense.toFixed(2)}</span></div>
-            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700">Net: <span className="font-semibold">{(totalIncome - totalExpense).toFixed(2)}</span></div>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700">Income: <span className="font-semibold">{totalIncome.toFixed(2)} EUR</span></div>
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">Expense: <span className="font-semibold">{totalExpense.toFixed(2)} EUR</span></div>
+            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700">Net: <span className="font-semibold">{(totalIncome - totalExpense).toFixed(2)} EUR</span></div>
           </div>
         </form>
 
@@ -155,8 +180,8 @@ export default async function DoneEventsPage({ searchParams }: { searchParams: P
                       <td className="px-3 py-2 sm:px-4 sm:py-3 font-medium text-slate-800">{e.name ?? "-"}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{whenStr}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{e.city ?? "-"}</td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{typeof e.__income === 'number' ? e.__income.toFixed(2) : '-'}</td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{typeof e.__expense === 'number' ? e.__expense.toFixed(2) : '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{typeof e.__income === 'number' ? `${e.__income.toFixed(2)} EUR` : '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{typeof e.__expense === 'number' ? `${e.__expense.toFixed(2)} EUR` : '-'}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3">
                         {href ? (
                           <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs text-slate-700 hover:bg-slate-50" title={href}>

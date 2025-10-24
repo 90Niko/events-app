@@ -30,9 +30,13 @@ export default function DeleteEventButton({ id }: { id: string | number | bigint
   }
 
   return (
-    <button type="button" onClick={onDelete} disabled={loading} className="btn-outline text-xs py-1 px-2">
+    <button
+      type="button"
+      onClick={onDelete}
+      disabled={loading}
+      className="btn-outline inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs"
+    >
       {loading ? "deleting..." : "Delete"}
     </button>
   );
 }
-

@@ -21,7 +21,7 @@ export default function ShareMenuBulk({ kind, params }: { kind: "expense" | "inc
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" onClick={() => setOpen(false)}>
         <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-800">Share / Export (filtered)</h3>
+            <h3 className="text-sm font-semibold text-slate-800">Export / Print (filtered)</h3>
             <button type="button" onClick={() => setOpen(false)} className="rounded-md p-1 text-slate-500 hover:text-slate-700" aria-label="Close">
               <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4"><path fill="currentColor" d="M6.2 4.8L4.8 6.2 10.6 12l-5.8 5.8 1.4 1.4L12 13.4l5.8 5.8 1.4-1.4L13.4 12l5.8-5.8-1.4-1.4L12 10.6 6.2 4.8z"/></svg>
             </button>
@@ -57,12 +57,11 @@ export default function ShareMenuBulk({ kind, params }: { kind: "expense" | "inc
 
   return (
     <>
-      <button type="button" className="btn-outline inline-flex items-center gap-1" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-expanded={open} aria-label="Share Filtered">
+      <button type="button" className="btn-outline inline-flex items-center gap-1" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-expanded={open} aria-label="Export / Print">
         <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4"><path fill="currentColor" d="M15 8a3 3 0 11-2.83 4H9a3 3 0 110-2h3.17A3 3 0 0115 8zm0-5a2 2 0 110 4 2 2 0 010-4zM6 10a2 2 0 110 4 2 2 0 010-4zm9 7a2 2 0 110 4 2 2 0 010-4z"/></svg>
-        <span className="hidden sm:inline">Share</span>
+        <span className="hidden sm:inline">Export/Print</span>
       </button>
       {open ? createPortal(<Modal />, document.body) : null}
     </>
   );
 }
-

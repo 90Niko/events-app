@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import AddExpenseForm from "@/components/AddExpenseFormWithCategories";
+import AddExpenseForm from "@/components/AddCompanyExpenseForm";
 import PrintButton from "@/components/PrintButton";
 import ShareMenuBulk from "@/components/ShareMenuBulk";
 import BackLink from "@/components/BackLink";
@@ -137,9 +137,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const highlightId = typeof sp?.new === "string" ? sp.new : "";
   const entries = await getExpenses({ start, end, category });
   const stockTotal = await getStockTotal();
-  // Prepare events list for adding new expenses
-  const events = await prisma.event.findMany({ select: { id: true, name: true }, orderBy: { id: "desc" } });
-  const eventOpts = events.map((e: any) => ({ id: String(e.id), name: e.name || `#${String(e.id)}` }));
+  // No event selection for company expenses
 
   const total = entries.reduce((s, x: any) => s + toNum(x.amount), 0);
   const byCategory = entries.reduce((acc: Record<string, number>, x: any) => {
@@ -167,7 +165,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
               <p className="mt-1 text-slate-500 text-sm">Listing {entries.length} entr{entries.length === 1 ? "y" : "ies"}.</p>
             </div>
           <div className="flex items-center gap-3">
-              <div className="text-sm text-slate-700">Total: <span className="font-semibold">{total.toFixed(2)}</span></div>
+              <div className="text-sm text-slate-700">Total: <span className="font-semibold">{total.toFixed(2)} EUR</span></div>
               <div className="text-sm text-slate-700">Stock spent: <span className="font-semibold">{stockTotal.toFixed(2)} EUR</span></div>
               <BackLink />
             </div>
@@ -178,7 +176,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
         <div className="card p-4 mb-6">
           <h2 className="text-base font-semibold text-slate-800">Add expense</h2>
           <div className="mt-3">
-            <AddExpenseForm events={eventOpts} />
+            <AddExpenseForm />
           </div>
         </div>
 
@@ -223,7 +221,6 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Category</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Description</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Amount</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3">Currency</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Payment</th>
 
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Share</th>
@@ -239,8 +236,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.event?.name ?? x.event_name ?? '-'}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.category ?? '-'}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.description ?? '-'}</td>
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.amount).toFixed(2)}</td>
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency ?? '-'}</td>
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.amount).toFixed(2)} EUR</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
 
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700"><ShareMenu kind="expense" id={String(x.id ?? "")} /></td>
@@ -251,7 +247,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                 )})}
                 {entries.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-slate-500">No expenses found.</td>
+                    <td colSpan={8} className="px-4 py-8 text-center text-slate-500">No expenses found.</td>
                   </tr>
                 )}
               </tbody>

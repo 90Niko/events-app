@@ -22,7 +22,8 @@ export default function NavBar() {
       <div className="relative mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-4">
           <a href="/events" className="text-sm font-semibold text-slate-800 hover:opacity-80">Events App</a>
-          <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-4 text-sm">
+          {/* Center icon nav (visible on md+); footer nav on mobile */}
+          <nav className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-4 text-sm">
             <a
               href="/create"
               className={`relative group ${pathname === "/create" ? "text-slate-900" : "text-slate-600 hover:text-slate-800"}`}
@@ -143,6 +144,7 @@ export default function NavBar() {
           <LogoutButton />
         </div>
       </div>
+      {/* Footer nav now rendered from MobileFooterNav component in layout on mobile only */}
     </div>
   );
 }

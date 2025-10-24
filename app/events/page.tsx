@@ -135,7 +135,9 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                           <span className="text-slate-400">-</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 flex items-center gap-2">{e.id != null ? <MarkDoneButton id={e.id} /> : null}{e.id != null ? <DeleteEventButton id={e.id} /> : null}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3">
+                        <div className="inline-flex items-center gap-2">{e.id != null ? <MarkDoneButton id={e.id} /> : null}{e.id != null ? <DeleteEventButton id={e.id} /> : null}</div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -152,5 +154,3 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     </div>
   );
 }
-
-

@@ -131,12 +131,12 @@ export default function CreatePage() {
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="start_datetime">Start<span className="ml-1 text-rose-500" aria-hidden>*</span></Label>
-                <input id="start_datetime" name="start_datetime" type="datetime-local" min={nowLocal} className="mt-1 block w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-800 outline-none shadow-sm placeholder:text-slate-400 ring-0 focus-visible:border-slate-300 focus-visible:ring-4 focus-visible:ring-slate-100 transition" required />
+                <input id="start_datetime" name="start_datetime" type="datetime-local" className="mt-1 block w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-800 outline-none shadow-sm placeholder:text-slate-400 ring-0 focus-visible:border-slate-300 focus-visible:ring-4 focus-visible:ring-slate-100 transition" required />
                 <p className="mt-1 text-xs text-slate-500">Select start date and time.</p>
               </div>
               <div>
                 <Label htmlFor="end_datetime">End<span className="ml-1 text-rose-500" aria-hidden>*</span></Label>
-                <input id="end_datetime" name="end_datetime" type="datetime-local" min={nowLocal} className="mt-1 block w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-800 outline-none shadow-sm placeholder:text-slate-400 ring-0 focus-visible:border-slate-300 focus-visible:ring-4 focus-visible:ring-slate-100 transition" required />
+                <input id="end_datetime" name="end_datetime" type="datetime-local" className="mt-1 block w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-800 outline-none shadow-sm placeholder:text-slate-400 ring-0 focus-visible:border-slate-300 focus-visible:ring-4 focus-visible:ring-slate-100 transition" required />
                 <p className="mt-1 text-xs text-slate-500">Select end date and time.</p>
               </div>
             </div>

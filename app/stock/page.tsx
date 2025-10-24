@@ -1,4 +1,6 @@
 import AddStockForm from "@/components/AddStockForm";
+import BackLink from "@/components/BackLink";
+import ShareMenuStockRow from "@/components/ShareMenuStockRow";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 
@@ -8,6 +10,17 @@ type Search = { [k: string]: string | string[] | undefined };
 
 function toNum(v: any) {
   return Number((v?.toString?.() ?? v) ?? 0);
+}
+
+function parseUnit(desc: any): 'kg' | 'pcs' {
+  const s = (desc?.toString?.() ?? '').toString();
+  const m = s.match(/\[unit:(kg|pcs)\]/i);
+  return (m?.[1]?.toLowerCase?.() as any) === 'pcs' ? 'pcs' : 'kg';
+}
+
+function stripUnit(desc: any): string {
+  const s = (desc?.toString?.() ?? '').toString();
+  return s.replace(/\s*\[unit:(kg|pcs)\]\s*/i, '').trim();
 }
 
 async function getStockEntries(filters: { start?: string; end?: string; purchased_by?: string; payment_method?: string; q?: string }) {
@@ -53,6 +66,16 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
   const entries = await getStockEntries({ start, end, purchased_by, payment_method, q });
   const totalWeight = entries.reduce((s: number, x: any) => s + toNum(x.weight_kg), 0);
   const totalCost = entries.reduce((s: number, x: any) => s + toNum(x.price_per_kg) * toNum(x.weight_kg), 0);
+  const totalsByUnit = entries.reduce(
+    (acc: { kg: number; pcs: number }, x: any) => {
+      const unit = parseUnit(x.description);
+      if (unit === 'pcs') acc.pcs += toNum(x.weight_kg);
+      else acc.kg += toNum(x.weight_kg);
+      return acc;
+    },
+    { kg: 0, pcs: 0 }
+  );
+  const countEntries = entries.length;
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-slate-50 via-white to-white relative">
@@ -76,7 +99,12 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
                 <p className="mt-1 text-slate-500 text-sm">Fill the form to add a new stock entry.</p>
               )}
             </div>
-            <div className="flex items-center gap-3" />
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-slate-700">Total spent: <span className="font-semibold">{totalCost.toFixed(2)} EUR</span></div>
+              <div className="text-sm text-slate-700">Records: <span className="font-semibold">{countEntries}</span></div>
+              <div className="text-sm text-slate-700">Qty: <span className="font-semibold">{totalsByUnit.kg.toFixed(3)} kg</span> • <span className="font-semibold">{totalsByUnit.pcs.toFixed(0)} pcs</span></div>
+              <BackLink />
+            </div>
           </div>
         </header>
 
@@ -135,31 +163,46 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Date</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Purchased by</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Payment</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3">Price/kg (EUR)</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3">Weight (kg)</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Price (EUR)</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Quantity</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Total (EUR)</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Description</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3">Share</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
                 {entries.map((x: any) => {
+                  const unit = parseUnit(x.description);
                   const total = toNum(x.price_per_kg) * toNum(x.weight_kg);
                   const isNew = highlightId && String(x.id ?? "") === String(highlightId);
                   return (
-                    <tr key={String(x.id)} className={`hover:bg-slate-50/60 ${isNew ? "bg-emerald-50 ring-2 ring-emerald-300" : ""}`}>
+                    <tr id={`stock-${String(x.id)}`} key={String(x.id)} className={`hover:bg-slate-50/60 ${isNew ? "bg-emerald-50 ring-2 ring-emerald-300" : ""}`}>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.purchase_date ? format(new Date(x.purchase_date), 'dd MMM yyyy') : '-'}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.purchased_by ?? '-'}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.price_per_kg).toFixed(2)}</td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.weight_kg).toFixed(3)}</td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{total.toFixed(2)}</td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.description ?? '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.price_per_kg).toFixed(2)} EUR</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{unit === 'kg' ? `${toNum(x.weight_kg).toFixed(3)} kg` : `${toNum(x.weight_kg).toFixed(0)} pcs`}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{total.toFixed(2)} EUR</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{stripUnit(x.description) || '-'}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">
+                        <ShareMenuStockRow
+                          id={String(x.id)}
+                          date={x.purchase_date ? new Date(x.purchase_date).toISOString().slice(0,10) : ''}
+                          purchasedBy={x.purchased_by ?? ''}
+                          paymentMethod={x.payment_method ?? ''}
+                          desc={stripUnit(x.description) || ''}
+                          price={toNum(x.price_per_kg)}
+                          qty={toNum(x.weight_kg)}
+                          unit={unit}
+                          total={total}
+                        />
+                      </td>
                     </tr>
                   );
                 })}
                 {entries.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">No stock found.</td>
+                    <td colSpan={8} className="px-4 py-8 text-center text-slate-500">No stock found.</td>
                   </tr>
                 )}
               </tbody>

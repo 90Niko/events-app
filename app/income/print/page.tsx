@@ -74,14 +74,14 @@ export default async function IncomePrintPage({ searchParams }: { searchParams: 
               <td>{x.description ?? '-'}</td>
               <td>{x.payment_method ?? '-'}</td>
 
-              <td className="text-right">{toNum(x.amount).toFixed(2)}</td>
+              <td className="text-right">{toNum(x.amount).toFixed(2)} EUR</td>
             </tr>
           ))}
         </tbody>
         <tfoot>
           <tr>
             <td colSpan={6} className="text-right"><strong>Total</strong></td>
-            <td className="text-right"><strong>{total.toFixed(2)}</strong></td>
+            <td className="text-right"><strong>{total.toFixed(2)} EUR</strong></td>
           </tr>
         </tfoot>
       </table>

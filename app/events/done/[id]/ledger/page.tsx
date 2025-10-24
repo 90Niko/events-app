@@ -61,15 +61,15 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700">
             Income
-            <div className="text-lg font-semibold">{incomeTotal.toFixed(2)}</div>
+            <div className="text-lg font-semibold">{incomeTotal.toFixed(2)} EUR</div>
           </div>
           <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
             Expense
-            <div className="text-lg font-semibold">{expenseTotal.toFixed(2)}</div>
+            <div className="text-lg font-semibold">{expenseTotal.toFixed(2)} EUR</div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700">
             Net
-            <div className="text-lg font-semibold">{netTotal.toFixed(2)}</div>
+            <div className="text-lg font-semibold">{netTotal.toFixed(2)} EUR</div>
           </div>
         </div>
 
@@ -105,7 +105,7 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.entry_type}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.category ?? '-'}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.description ?? '-'}</td>
-                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{amountStr}</td>
+                      <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{amountStr !== '-' ? `${amountStr} EUR` : '-'}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency}</td>
                       <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
 

@@ -115,6 +115,18 @@ async function getIncome(filters: { start?: string; end?: string; category?: str
   return rows as any[];
 }
 
+async function getStockTotal() {
+  const anyPrisma: any = prisma as any;
+  if (anyPrisma?.stock?.findMany) {
+    const rows = await anyPrisma.stock.findMany({ select: { price_per_kg: true, weight_kg: true } });
+    const total = rows.reduce((s: number, r: any) => s + toNum(r.price_per_kg) * toNum(r.weight_kg), 0);
+    return total;
+  }
+  const rows = await anyPrisma.$queryRaw`SELECT SUM(price_per_kg * weight_kg) AS total FROM stock`;
+  const t = Array.isArray(rows) ? (rows[0]?.total ?? 0) : (rows as any)?.total ?? 0;
+  return Number(t ?? 0);
+}
+
 export default async function IncomePage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const start = typeof sp?.start === "string" ? sp.start : "";
@@ -123,6 +135,7 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
   const highlightId = typeof sp?.new === "string" ? sp.new : "";
   const entries = await getIncome({ start, end, category });
   const total = entries.reduce((s, x: any) => s + toNum(x.amount), 0);
+  const stockTotal = await getStockTotal();
   const byCategory = entries.reduce((acc: Record<string, number>, x: any) => {
     const key = x.category ?? "(uncategorized)";
     acc[key] = (acc[key] ?? 0) + toNum(x.amount);
@@ -151,9 +164,11 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">Company income</h1>
               <p className="mt-1 text-slate-500 text-sm">Listing {entries.length} entr{entries.length === 1 ? "y" : "ies"}.</p>
             </div>
-            <div className="flex items-center gap-3">
-              <BackLink />
-            </div>
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-slate-700">Total: <span className="font-semibold">{total.toFixed(2)} EUR</span></div>
+            <div className="text-sm text-slate-700">Stock spent: <span className="font-semibold">{stockTotal.toFixed(2)} EUR</span></div>
+            <BackLink />
+          </div>
           </div>
         </header>
 
@@ -205,7 +220,6 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Category</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Description</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Amount</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3">Currency</th>
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Payment</th>
 
                   <th className="px-3 py-2 sm:px-4 sm:py-3">Share</th>
@@ -221,8 +235,7 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.event?.name ?? x.event_name ?? '-'}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.category ?? '-'}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.description ?? '-'}</td>
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.amount).toFixed(2)}</td>
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.currency ?? '-'}</td>
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{toNum(x.amount).toFixed(2)} EUR</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700">{x.payment_method ?? '-'}</td>
 
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-slate-700"><ShareMenu kind="income" id={String(x.id ?? "")} /></td>
