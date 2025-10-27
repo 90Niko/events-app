@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const allowedEmails = (
-  process.env.NEXT_PUBLIC_ALLOWED_EMAILS ||
-  "ngeroev78@gmail.com, ivelinhs@gmail.com"
-)
-  .split(",")
-  .map((s) => s.trim().toLowerCase())
-  .filter(Boolean);
+const allowedEmails = [
+  ...(process.env.NEXT_PUBLIC_ALLOWED_EMAILS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean),
+  "ngeroev78@gmail.com",
+  "ivelinhs@gmail.com",
+];
+
 
 
 export default function Page() {
