@@ -58,6 +58,8 @@ export default function AddCompanyExpenseForm() {
           <option value="Food">Food</option>
           <option value="Fuel">Fuel</option>
           <option value="Rent">Rent</option>
+          <option value="Salary">Salary</option>
+          <option value="Stock">Stock</option>
           <option value="Other">Other</option>
         </select>
       </div>

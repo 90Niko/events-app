@@ -19,14 +19,38 @@ async function getData(id: bigint) {
   return { event, entries } as any;
 }
 
+async function getSalaryTotalForEvent(id: bigint) {
+  const anyPrisma: any = prisma as any;
+  if (anyPrisma?.eventLedger?.findMany) {
+    try {
+      let total = 0;
+      const toNum = (v: any) => Number((v?.toString?.() ?? v) ?? 0);
+      const rows = await anyPrisma.eventLedger.findMany({ where: { event_id: id, entry_type: 'salary' as any } });
+      total += rows.reduce((s: number, x: any) => s + toNum(x.amount), 0);
+      // Also sum expenses with Salary category
+      const rows2 = await anyPrisma.eventLedger.findMany({ where: { event_id: id, entry_type: 'expense', category: 'Salary' } });
+      total += rows2.reduce((s: number, x: any) => s + toNum(x.amount), 0);
+      return total;
+    } catch {
+      // fall back to raw SQL when client enum doesn't include 'salary'
+    }
+  }
+  const rows: any[] = await (anyPrisma).$queryRaw`SELECT 
+    COALESCE((SELECT SUM(amount) FROM event_ledger WHERE event_id = ${id} AND entry_type = 'salary'), 0) +
+    COALESCE((SELECT SUM(amount) FROM event_ledger WHERE event_id = ${id} AND entry_type = 'expense' AND category = 'Salary'), 0) AS total`;
+  const t = Array.isArray(rows) ? (rows[0]?.total ?? 0) : (rows as any)?.total ?? 0;
+  return Number(t ?? 0);
+}
+
 export default async function LedgerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const bid = BigInt(id);
   const { event, entries } = await getData(bid);
   const toNum = (v: any) => Number((v?.toString?.() ?? v) ?? 0);
   const incomeTotal = entries.reduce((s: number, x: any) => s + (x.entry_type === 'income' ? toNum(x.amount) : 0), 0);
-  const expenseTotal = entries.reduce((s: number, x: any) => s + (x.entry_type === 'expense' ? toNum(x.amount) : 0), 0);
-  const netTotal = incomeTotal - expenseTotal;
+  const expenseTotal = entries.reduce((s: number, x: any) => s + (x.entry_type === 'expense' && !['Salary','Stock'].includes(String(x.category ?? '')) ? toNum(x.amount) : 0), 0);
+  const salaryTotal = await getSalaryTotalForEvent(bid);
+  const netTotal = incomeTotal - expenseTotal - salaryTotal;
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-slate-50 via-white to-white relative">
@@ -58,7 +82,7 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
         </div>
 
         <div className="h-4" />
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700">
             Income
             <div className="text-lg font-semibold">{incomeTotal.toFixed(2)} EUR</div>
@@ -66,6 +90,10 @@ export default async function LedgerPage({ params }: { params: Promise<{ id: str
           <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
             Expense
             <div className="text-lg font-semibold">{expenseTotal.toFixed(2)} EUR</div>
+          </div>
+          <div className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sky-700">
+            Salary
+            <div className="text-lg font-semibold">{salaryTotal.toFixed(2)} EUR</div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700">
             Net

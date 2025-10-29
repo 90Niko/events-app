@@ -25,7 +25,7 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
   if (anyPrisma?.eventLedger?.findMany) {
     const where: any = { entry_type: "expense" };
     if (gte || lte) where.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
-    if (category) where.category = { contains: category, mode: "insensitive" };
+    if (category) where.category = category;
     const entries = await anyPrisma.eventLedger.findMany({
       where,
       include: { event: { select: { name: true } } },
@@ -117,6 +117,55 @@ async function getExpenses(filters: { start?: string; end?: string; category?: s
   return rows as any[];
 }
 
+async function getGlobalExpenseTotalExclSalary() {
+  const anyPrisma: any = prisma as any;
+  if (anyPrisma?.eventLedger?.aggregate) {
+    const agg = await anyPrisma.eventLedger.aggregate({
+      where: { entry_type: 'expense', NOT: { category: { in: ['Salary', 'Stock'] } } },
+      _sum: { amount: true },
+    });
+    const v = (agg?._sum?.amount as any);
+    return Number(v?.toString?.() ?? v ?? 0);
+  }
+  const rows: any[] = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE entry_type = 'expense' AND (category IS NULL OR category NOT IN ('Salary','Stock'))`;
+  const t = Array.isArray(rows) ? (rows[0]?.total ?? 0) : (rows as any)?.total ?? 0;
+  return Number((t as any)?.toString?.() ?? t ?? 0);
+}
+
+async function getGlobalSalaryTotal() {
+  const anyPrisma: any = prisma as any;
+  if (anyPrisma?.eventLedger?.findMany) {
+    let total = 0;
+    try {
+      const rows = await anyPrisma.eventLedger.findMany({ where: { entry_type: 'salary' } });
+      total += rows.reduce((s: number, x: any) => s + toNum(x.amount), 0);
+    } catch {}
+    const rows2 = await anyPrisma.eventLedger.findMany({ where: { entry_type: 'expense', category: 'Salary' } });
+    total += rows2.reduce((s: number, x: any) => s + toNum(x.amount), 0);
+    return total;
+  }
+  const rows: any[] = await (anyPrisma).$queryRaw`SELECT 
+    COALESCE((SELECT SUM(amount) FROM event_ledger WHERE entry_type = 'salary'), 0) +
+    COALESCE((SELECT SUM(amount) FROM event_ledger WHERE entry_type = 'expense' AND category = 'Salary'), 0) AS total`;
+  const t = Array.isArray(rows) ? (rows[0]?.total ?? 0) : (rows as any)?.total ?? 0;
+  return Number((t as any)?.toString?.() ?? t ?? 0);
+}
+
+async function getGlobalStockExpenseTotal() {
+  const anyPrisma: any = prisma as any;
+  if (anyPrisma?.eventLedger?.aggregate) {
+    const agg = await anyPrisma.eventLedger.aggregate({
+      where: { entry_type: 'expense', category: 'Stock' },
+      _sum: { amount: true },
+    });
+    const v = (agg?._sum?.amount as any);
+    return Number(v?.toString?.() ?? v ?? 0);
+  }
+  const rows: any[] = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE entry_type = 'expense' AND category = 'Stock'`;
+  const t = Array.isArray(rows) ? (rows[0]?.total ?? 0) : (rows as any)?.total ?? 0;
+  return Number((t as any)?.toString?.() ?? t ?? 0);
+}
+
 async function getStockTotal() {
   const anyPrisma: any = prisma as any;
   if (anyPrisma?.stock?.findMany) {
@@ -129,6 +178,41 @@ async function getStockTotal() {
   return Number(t ?? 0);
 }
 
+async function getSalaryTotal(filters: { start?: string; end?: string }) {
+  const anyPrisma: any = prisma as any;
+  const { start, end } = filters;
+  const gte = start ? new Date(start) : undefined;
+  const lte = end ? new Date(end) : undefined;
+  if (anyPrisma?.eventLedger?.findMany) {
+    let total = 0;
+    // Try explicit salary entries
+    try {
+      const whereSalary: any = { entry_type: 'salary' };
+      if (gte || lte) whereSalary.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
+      const rows = await anyPrisma.eventLedger.findMany({ where: whereSalary });
+      total += rows.reduce((s: number, x: any) => s + Number((x?.amount as any)?.toString?.() ?? x?.amount ?? 0), 0);
+    } catch {}
+    // Plus expenses categorized as Salary
+    const whereExpenseSalary: any = { entry_type: 'expense', category: 'Salary' };
+    if (gte || lte) whereExpenseSalary.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
+    const rows2 = await anyPrisma.eventLedger.findMany({ where: whereExpenseSalary });
+    total += rows2.reduce((s: number, x: any) => s + Number((x?.amount as any)?.toString?.() ?? x?.amount ?? 0), 0);
+    return total;
+  }
+  // Raw SQL fallback: salaries + expense category Salary
+  const conditions: string[] = [];
+  const params: any[] = [];
+  if (gte) { conditions.push("entry_date >= ?"); params.push(gte); }
+  if (lte) { conditions.push("entry_date <= ?"); params.push(lte); }
+  const whereSql = conditions.length ? `AND ${conditions.join(" AND ")}` : "";
+  const sql = `SELECT 
+      COALESCE((SELECT SUM(amount) FROM event_ledger WHERE entry_type = 'salary' ${whereSql}), 0) +
+      COALESCE((SELECT SUM(amount) FROM event_ledger WHERE entry_type = 'expense' AND category = 'Salary' ${whereSql}), 0) AS total` as any;
+  const rows: any[] = await anyPrisma.$queryRawUnsafe(sql, ...params, ...params);
+  const total = Array.isArray(rows) && rows.length ? Number(rows[0]?.total ?? 0) : 0;
+  return Number.isFinite(total) ? total : 0;
+}
+
 export default async function ExpensesPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const start = typeof sp?.start === "string" ? sp.start : "";
@@ -136,10 +220,13 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const category = typeof sp?.category === "string" ? sp.category : "";
   const highlightId = typeof sp?.new === "string" ? sp.new : "";
   const entries = await getExpenses({ start, end, category });
-  const stockTotal = await getStockTotal();
+  const stockExpenseTotal = await getGlobalStockExpenseTotal();
+  const globalExpenseTotal = await getGlobalExpenseTotalExclSalary();
+  const salaryTotal = await getGlobalSalaryTotal();
   // No event selection for company expenses
 
-  const total = entries.reduce((s, x: any) => s + toNum(x.amount), 0);
+  // Filtered total should reflect exactly the listed rows
+  const filteredTotal = entries.reduce((s, x: any) => s + toNum(x.amount), 0);
   const byCategory = entries.reduce((acc: Record<string, number>, x: any) => {
     const key = x.category ?? "(uncategorized)";
     acc[key] = (acc[key] ?? 0) + toNum(x.amount);
@@ -164,9 +251,10 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">Company expenses</h1>
               <p className="mt-1 text-slate-500 text-sm">Listing {entries.length} entr{entries.length === 1 ? "y" : "ies"}.</p>
             </div>
-          <div className="flex items-center gap-3">
-              <div className="text-sm text-slate-700">Total: <span className="font-semibold">{total.toFixed(2)} EUR</span></div>
-              <div className="text-sm text-slate-700">Stock spent: <span className="font-semibold">{stockTotal.toFixed(2)} EUR</span></div>
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-slate-700">Total: <span className="font-semibold">{globalExpenseTotal.toFixed(2)} EUR</span></div>
+              <div className="text-sm text-slate-700">Stock: <span className="font-semibold">{stockExpenseTotal.toFixed(2)} EUR</span></div>
+              <div className="text-sm text-slate-700">Salary: <span className="font-semibold">{salaryTotal.toFixed(2)} EUR</span></div>
               <BackLink />
             </div>
           </div>
@@ -198,6 +286,8 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                 <option value="Food">Food</option>
                 <option value="Fuel">Fuel</option>
                 <option value="Rent">Rent</option>
+                <option value="Salary">Salary</option>
+                <option value="Stock">Stock</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -207,7 +297,16 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
               <ShareMenuBulk kind="expense" params={{ start, end, category }} />
             </div>
             {/* Removed by-category chips from filter */}
-            
+            { (start || end || category) ? (
+              <>
+                <div className="md:col-span-5 flex flex-wrap items-end gap-3 text-sm">
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">Expense (filtered): <span className="font-semibold">{filteredTotal.toFixed(2)} EUR</span></div>
+                </div>
+                <div className="md:col-span-5 text-xs text-slate-500 italic">
+                  Period: {start || 'All'} to {end || 'All'}{category ? `, Category: ${category}` : ''}
+                </div>
+              </>
+            ) : null }
           </form>
         </div>
 

@@ -1,4 +1,5 @@
 import AddStockForm from "@/components/AddStockForm";
+import SalaryPaymentForm from "@/components/SalaryPaymentForm";
 import BackLink from "@/components/BackLink";
 import ShareMenuStockRow from "@/components/ShareMenuStockRow";
 import { prisma } from "@/lib/prisma";
@@ -53,6 +54,50 @@ async function getStockEntries(filters: { start?: string; end?: string; purchase
   return rows as any[];
 }
 
+async function getSalaryTotal(filters: { start?: string; end?: string; payment_method?: string }) {
+  const anyPrisma: any = prisma as any;
+  const { start, end, payment_method } = filters;
+  const gte = start ? new Date(start) : undefined;
+  const lte = end ? new Date(end) : undefined;
+
+  try {
+    if (anyPrisma?.eventLedger?.findMany) {
+      let total = 0;
+      // Try explicit salary entries (if enum available in client)
+      try {
+        const whereSalary: any = { entry_type: 'salary' };
+        if (gte || lte) whereSalary.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
+        if (payment_method) whereSalary.payment_method = payment_method;
+        const rows = await anyPrisma.eventLedger.findMany({ where: whereSalary });
+        total += rows.reduce((s: number, x: any) => s + Number((x?.amount as any)?.toString?.() ?? x?.amount ?? 0), 0);
+      } catch {}
+      // Always include expense entries categorized as Salary
+      const whereExpenseSalary: any = { entry_type: 'expense', category: 'Salary' };
+      if (gte || lte) whereExpenseSalary.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
+      if (payment_method) whereExpenseSalary.payment_method = payment_method;
+      const rows2 = await anyPrisma.eventLedger.findMany({ where: whereExpenseSalary });
+      total += rows2.reduce((s: number, x: any) => s + Number((x?.amount as any)?.toString?.() ?? x?.amount ?? 0), 0);
+      return total;
+    }
+
+    // Fallback raw SQL: sum salaries + Salary expenses
+    const conditions: string[] = [];
+    const params: any[] = [];
+    if (gte) { conditions.push("entry_date >= ?"); params.push(gte); }
+    if (lte) { conditions.push("entry_date <= ?"); params.push(lte); }
+    if (payment_method) { conditions.push("payment_method = ?"); params.push(payment_method); }
+    const whereSql = conditions.length ? `AND ${conditions.join(" AND ")}` : "";
+    const sql = `SELECT 
+        COALESCE((SELECT SUM(amount) FROM event_ledger WHERE entry_type = 'salary' ${whereSql}), 0) +
+        COALESCE((SELECT SUM(amount) FROM event_ledger WHERE entry_type = 'expense' AND category = 'Salary' ${whereSql}), 0) AS total` as any;
+    const rows: any[] = await anyPrisma.$queryRawUnsafe(sql, ...params, ...params);
+    const total = Array.isArray(rows) && rows.length ? Number(rows[0]?.total ?? 0) : 0;
+    return Number.isFinite(total) ? total : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export default async function StockPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const start = typeof sp?.start === "string" ? sp.start : "";
@@ -61,9 +106,11 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
   const payment_method = typeof sp?.payment_method === "string" ? sp.payment_method : "";
   const q = typeof sp?.q === "string" ? sp.q : "";
   const highlightId = typeof sp?.new === "string" ? sp.new : "";
+  const salaryHighlightId = typeof sp?.salary_new === "string" ? sp.salary_new : "";
   const envUsers = (process.env.NEXT_PUBLIC_ALLOWED_EMAILS || "").split(",").map(s => s.trim()).filter(Boolean);
   const users = envUsers.length >= 2 ? envUsers.slice(0, 2) : envUsers.length === 1 ? [envUsers[0], "User 2"] : ["User 1", "User 2"];
   const entries = await getStockEntries({ start, end, purchased_by, payment_method, q });
+  const salaryTotal = await getSalaryTotal({ start, end, payment_method });
   const totalWeight = entries.reduce((s: number, x: any) => s + toNum(x.weight_kg), 0);
   const totalCost = entries.reduce((s: number, x: any) => s + toNum(x.price_per_kg) * toNum(x.weight_kg), 0);
   const totalsByUnit = entries.reduce(
@@ -94,15 +141,18 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
               </div>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-800">Add Stock</h1>
               {highlightId ? (
-                <p className="mt-1 text-slate-500 text-sm">Successfully saved record #{highlightId}</p>
+                <p className="mt-1 text-slate-500 text-sm">Successfully saved stock record #{highlightId}</p>
+              ) : salaryHighlightId ? (
+                <p className="mt-1 text-slate-500 text-sm">Successfully saved salary record #{salaryHighlightId}</p>
               ) : (
-                <p className="mt-1 text-slate-500 text-sm">Fill the form to add a new stock entry.</p>
+                <p className="mt-1 text-slate-500 text-sm">Fill the form to add a new stock entry or pay salary.</p>
               )}
             </div>
             <div className="flex items-center gap-3">
               <div className="text-sm text-slate-700">Total spent: <span className="font-semibold">{totalCost.toFixed(2)} EUR</span></div>
               <div className="text-sm text-slate-700">Records: <span className="font-semibold">{countEntries}</span></div>
               <div className="text-sm text-slate-700">Qty: <span className="font-semibold">{totalsByUnit.kg.toFixed(3)} kg</span> • <span className="font-semibold">{totalsByUnit.pcs.toFixed(0)} pcs</span></div>
+              <div className="text-sm text-slate-700">Salary total: <span className="font-semibold">{salaryTotal.toFixed(2)} EUR</span></div>
               <BackLink />
             </div>
           </div>
@@ -112,6 +162,15 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
           <h2 className="text-base font-semibold text-slate-800">New Stock</h2>
           <div className="mt-3">
             <AddStockForm users={users} />
+          </div>
+        </div>
+
+        <div className="h-4" />
+
+        <div className="card p-4 mb-6">
+          <h2 className="text-base font-semibold text-slate-800">Salary Payment</h2>
+          <div className="mt-3">
+            <SalaryPaymentForm />
           </div>
         </div>
 
