@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavGate from "@/components/NavGate";
-import MobileFooterNav from "@/components/MobileFooterNav";
+import NavGate from "@/components/common/NavGate";
+import MobileFooterNav from "@/components/common/MobileFooterNav";
 
 
 const geistSans = Geist({

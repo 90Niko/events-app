@@ -112,3 +112,4 @@ export default function AddStockForm({ users }: { users: string[] }) {
     </form>
   );
 }
+

@@ -34,7 +34,7 @@ export default function ShareMenuStockRow({
   const descStr = (desc ?? '').toString();
 
   function copySummary() {
-    const summary = `Stock #${id}: ${dateStr}, ${purchasedBy ?? '-'}, ${paymentMethod ?? '-'}, ${qtyStr} @ ${priceStr}, Total ${totalStr}${descStr ? ` — ${descStr}` : ''}`;
+    const summary = `Stock #${id}: ${dateStr}, ${purchasedBy ?? '-'}, ${paymentMethod ?? '-'}, ${qtyStr} @ ${priceStr}, Total ${totalStr}${descStr ? ` – ${descStr}` : ''}`;
     try {
       navigator.clipboard.writeText(summary).then(() => {
         setCopied(true);
@@ -87,11 +87,11 @@ export default function ShareMenuStockRow({
           </div>
           <div className="mt-3 grid grid-cols-1 gap-2">
             <button type="button" className="hidden btn-outline justify-start" onClick={copySummary}>
-              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4"><path fill="currentColor" d="M4 4h13a3 3 0 013 3v11a3 3 0 01-3 3H8a3 3 0 01-3-3V4zm2 2v12a1 1 0 001 1h11V7a1 1 0 00-1-1H6z"/></svg>
+              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4"><path fill="currentColor" d="M4 4h13a3 3 0 013 3v11a3 3 0 01-3 3H8a3 3 0 01-3-3V4zm2 2v12a1 1 0 001 1h11V7a1 1 0 00-1-1h-2v2H7V6H5z"/></svg>
               {copied ? 'Copied!' : 'Copy summary'}
             </button>
             <button type="button" className="hidden btn-outline justify-start" onClick={copyLink}>
-              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4"><path fill="currentColor" d="M3 16a5 5 0 005 5h3v-2H8a3 3 0 110-6h3v-2H8a5 5 0 00-5 5zm8-7V7H8a3 3 0 000 6h3v-2H8a1 1 0 110-2h3zm3-2h-3v2h3a1 1 0 010 2h-3v2h3a3 3 0 000-6z"/></svg>
+              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4"><path fill="currentColor" d="M3 16a5 5 0 005 5h3v-2H8a3 3 0 110-6h3v-2H8a1 1 0 110-2h3zm8-7V7H8a3 3 0 000 6h3v-2H8a1 1 0 110-2h3zm3-2h-3v2h3a1 1 0 010 2h-3v2h3a3 3 0 000-6z"/></svg>
               Copy link to row
             </button>
           </div>
@@ -116,3 +116,4 @@ export default function ShareMenuStockRow({
     </>
   );
 }
+

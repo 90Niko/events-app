@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import NavBar from "@/components/NavBar";
+import NavBar from "@/components/common/NavBar";
 
 export default function NavGate() {
   const pathname = usePathname();
@@ -11,4 +11,3 @@ export default function NavGate() {
 
   return <NavBar />;
 }
-

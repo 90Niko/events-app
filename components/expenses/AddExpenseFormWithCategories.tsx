@@ -5,7 +5,7 @@ import { useState } from "react";
 
 type EventOpt = { id: string; name: string };
 
-export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
+export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -18,10 +18,11 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
     const eventId = String(f.get("event_id") || "");
     const amountNum = Number(f.get("amount") ?? 0);
     const payload = {
-      entry_type: "income",
+      entry_type: "expense",
       category: f.get("category") || null,
       description: f.get("description") || null,
       amount: amountNum,
+      currency: f.get("currency") || "EUR",
       payment_method: f.get("payment_method") || null,
     } as any;
     if (!eventId) {
@@ -48,7 +49,7 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
       const j = await res.json().catch(() => ({}));
       const id = j?.id ?? j?.data?.id;
       form.reset();
-      router.push(id ? `/income?new=${encodeURIComponent(String(id))}` : "/income");
+      router.push(id ? `/expenses?new=${encodeURIComponent(String(id))}` : "/expenses");
     } catch (e: any) {
       setErr(e?.message || "Failed to save");
     } finally {
@@ -71,9 +72,10 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
         <label className="text-xs font-medium text-slate-600" htmlFor="category">Category</label>
         <select id="category" name="category" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
           <option value="">Select category…</option>
-          <option value="Mystery box">Mystery box</option>
-          <option value="Online">Online</option>
-          <option value="Event">Event</option>
+          <option value="Food">Food</option>
+          <option value="Fuel">Fuel</option>
+          <option value="Rent">Rent</option>
+          <option value="Other">Other</option>
         </select>
       </div>
       <div className="md:col-span-2">
@@ -84,7 +86,10 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
         <label className="text-xs font-medium text-slate-600" htmlFor="amount">Amount</label>
         <input id="amount" name="amount" type="number" step="0.01" min="0" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
-      
+      <div>
+        <label className="text-xs font-medium text-slate-600" htmlFor="currency">Currency</label>
+        <input id="currency" name="currency" defaultValue="EUR" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+      </div>
       <div>
         <label className="text-xs font-medium text-slate-600" htmlFor="payment_method">Payment</label>
         <select id="payment_method" name="payment_method" defaultValue="cash" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
@@ -94,9 +99,10 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
       </div>
       
       <div className="md:col-span-6 flex items-end gap-2">
-        <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving…' : 'Add income'}</button>
+        <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving…' : 'Add expense'}</button>
         {err ? <span className="text-sm text-rose-600">{err}</span> : null}
       </div>
     </form>
   );
 }
+

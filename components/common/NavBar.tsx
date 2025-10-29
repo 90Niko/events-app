@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import LogoutButton from "@/components/LogoutButton";
+import LogoutButton from "@/components/common/LogoutButton";
 
 export default function NavBar() {
   const [email, setEmail] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export default function NavBar() {
             >
               <svg aria-hidden viewBox="0 0 24 24" fill="none" strokeWidth="1.6" stroke="currentColor" className="h-7 w-7 transition-transform duration-150 ease-out group-hover:scale-110">
                 <circle cx="12" cy="12" r="9" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V8m0 0l-3 3m3-3l3 3" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V8m0 0l-3 3m3-3l 3 3" />
               </svg>
               <span className={`pointer-events-none absolute -bottom-1 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded bg-current transition ${pathname?.startsWith("/income") ? "opacity-100" : "opacity-0 group-hover:opacity-50"}`} />
               <span className="sr-only">Income</span>
@@ -131,20 +131,13 @@ export default function NavBar() {
             </a>
           </nav>
         </div>
+
         <div className="flex items-center gap-3">
-          <div className="text-sm text-slate-600">
-            {name ? (
-              <span>
-                Welcome, <span className="font-medium text-slate-800">{name}</span>
-              </span>
-            ) : (
-              <span>Welcome</span>
-            )}
-          </div>
+          <div className="text-xs text-slate-600">{name}</div>
           <LogoutButton />
         </div>
       </div>
-      {/* Footer nav now rendered from MobileFooterNav component in layout on mobile only */}
     </div>
   );
 }
+

@@ -1,35 +1,33 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-type EventOpt = { id: string; name: string };
-
-export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
+export default function LedgerForm({ eventId }: { eventId: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [entryType, setEntryType] = useState<"income" | "expense">("income");
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid SSR rendering to prevent hydration mismatches in some environments
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErr(null);
-    const form = e.currentTarget as HTMLFormElement;
-    const f = new FormData(form);
-    const eventId = String(f.get("event_id") || "");
-    const amountNum = Number(f.get("amount") ?? 0);
+    const formEl = e.currentTarget as HTMLFormElement;
+    const f = new FormData(formEl);
     const payload = {
-      entry_type: "expense",
+      entry_type: f.get("entry_type"),
       category: f.get("category") || null,
       description: f.get("description") || null,
-      amount: amountNum,
+      amount: Number(f.get("amount") ?? 0),
       currency: f.get("currency") || "EUR",
       payment_method: f.get("payment_method") || null,
     } as any;
-    if (!eventId) {
-      setErr("Please select an event.");
-      return;
-    }
-    if (amountNum < 0) {
+    if (Number.isNaN(payload.amount) || payload.amount < 0) {
       setErr("Amount must be non-negative.");
       return;
     }
@@ -46,10 +44,8 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j?.error || "Failed to save");
       }
-      const j = await res.json().catch(() => ({}));
-      const id = j?.id ?? j?.data?.id;
-      form.reset();
-      router.push(id ? `/expenses?new=${encodeURIComponent(String(id))}` : "/expenses");
+      formEl?.reset();
+      router.refresh();
     } catch (e: any) {
       setErr(e?.message || "Failed to save");
     } finally {
@@ -59,38 +55,52 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
 
   return (
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-6">
-      <div className="md:col-span-2">
-        <label htmlFor="event_id" className="text-xs font-medium text-slate-600">Event</label>
-        <select id="event_id" name="event_id" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
-          <option value="">Select event…</option>
-          {events.map((ev) => (
-            <option key={ev.id} value={ev.id}>{ev.name}</option>
-          ))}
+      <div className="md:col-span-1">
+        <label className="text-xs font-medium text-slate-600" htmlFor="entry_type">Type</label>
+        <select
+          id="entry_type"
+          name="entry_type"
+          value={entryType}
+          onChange={(e) => setEntryType(e.currentTarget.value as any)}
+          className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm"
+        >
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
         </select>
       </div>
-      <div>
+      <div className="md:col-span-1">
         <label className="text-xs font-medium text-slate-600" htmlFor="category">Category</label>
-        <select id="category" name="category" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
-          <option value="">Select category…</option>
-          <option value="Food">Food</option>
-          <option value="Fuel">Fuel</option>
-          <option value="Rent">Rent</option>
-          <option value="Other">Other</option>
-        </select>
+        {entryType === "expense" ? (
+          <select id="category" name="category" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
+            <option value="">Select category…</option>
+            <option value="Food">Food</option>
+            <option value="Fuel">Fuel</option>
+            <option value="Rent">Rent</option>
+            <option value="Other">Other</option>
+          </select>
+        ) : (
+          <select id="category" name="category" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
+            <option value="">Select category…</option>
+            <option value="Mystery box">Mystery box</option>
+            <option value="Online">Online</option>
+            <option value="Event">Event</option>
+          </select>
+        )}
       </div>
       <div className="md:col-span-2">
         <label className="text-xs font-medium text-slate-600" htmlFor="description">Description</label>
         <input id="description" name="description" placeholder="short note" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
-      <div>
+      <div className="md:col-span-1">
         <label className="text-xs font-medium text-slate-600" htmlFor="amount">Amount</label>
         <input id="amount" name="amount" type="number" step="0.01" min="0" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
-      <div>
+      <div className="md:col-span-1">
         <label className="text-xs font-medium text-slate-600" htmlFor="currency">Currency</label>
         <input id="currency" name="currency" defaultValue="EUR" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
-      <div>
+      {/* Date is set automatically to today on the server */}
+      <div className="md:col-span-2">
         <label className="text-xs font-medium text-slate-600" htmlFor="payment_method">Payment</label>
         <select id="payment_method" name="payment_method" defaultValue="cash" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
           <option value="cash">Cash</option>
@@ -99,9 +109,10 @@ export default function AddExpenseForm({ events }: { events: EventOpt[] }) {
       </div>
       
       <div className="md:col-span-6 flex items-end gap-2">
-        <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving…' : 'Add expense'}</button>
+        <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving…' : 'Add entry'}</button>
         {err ? <span className="text-sm text-rose-600">{err}</span> : null}
       </div>
     </form>
   );
 }
+

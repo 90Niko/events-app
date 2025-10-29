@@ -1,7 +1,7 @@
-import AddStockForm from "@/components/AddStockForm";
-import SalaryPaymentForm from "@/components/SalaryPaymentForm";
-import BackLink from "@/components/BackLink";
-import ShareMenuStockRow from "@/components/ShareMenuStockRow";
+import AddStockForm from "@/components/stock/AddStockForm";
+import SalaryPaymentForm from "@/components/salary/SalaryPaymentForm";
+import BackLink from "@/components/common/BackLink";
+import ShareMenuStockRow from "@/components/stock/ShareMenuStockRow";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 
@@ -61,26 +61,7 @@ async function getSalaryTotal(filters: { start?: string; end?: string; payment_m
   const lte = end ? new Date(end) : undefined;
 
   try {
-    if (anyPrisma?.eventLedger?.findMany) {
-      let total = 0;
-      // Try explicit salary entries (if enum available in client)
-      try {
-        const whereSalary: any = { entry_type: 'salary' };
-        if (gte || lte) whereSalary.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
-        if (payment_method) whereSalary.payment_method = payment_method;
-        const rows = await anyPrisma.eventLedger.findMany({ where: whereSalary });
-        total += rows.reduce((s: number, x: any) => s + Number((x?.amount as any)?.toString?.() ?? x?.amount ?? 0), 0);
-      } catch {}
-      // Always include expense entries categorized as Salary
-      const whereExpenseSalary: any = { entry_type: 'expense', category: 'Salary' };
-      if (gte || lte) whereExpenseSalary.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
-      if (payment_method) whereExpenseSalary.payment_method = payment_method;
-      const rows2 = await anyPrisma.eventLedger.findMany({ where: whereExpenseSalary });
-      total += rows2.reduce((s: number, x: any) => s + Number((x?.amount as any)?.toString?.() ?? x?.amount ?? 0), 0);
-      return total;
-    }
-
-    // Fallback raw SQL: sum salaries + Salary expenses
+    // Raw SQL only to avoid Prisma enum validation for 'salary'
     const conditions: string[] = [];
     const params: any[] = [];
     if (gte) { conditions.push("entry_date >= ?"); params.push(gte); }

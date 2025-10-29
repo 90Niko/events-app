@@ -16,17 +16,20 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
     const form = e.currentTarget as HTMLFormElement;
     const f = new FormData(form);
     const eventId = String(f.get("event_id") || "");
+    const amountNum = Number(f.get("amount") ?? 0);
     const payload = {
       entry_type: "income",
       category: f.get("category") || null,
       description: f.get("description") || null,
-      amount: f.get("amount"),
-      currency: f.get("currency") || "EUR",
+      amount: amountNum,
       payment_method: f.get("payment_method") || null,
-      
     } as any;
     if (!eventId) {
       setErr("Please select an event.");
+      return;
+    }
+    if (amountNum < 0) {
+      setErr("Amount must be non-negative.");
       return;
     }
     try {
@@ -66,7 +69,12 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
       </div>
       <div>
         <label className="text-xs font-medium text-slate-600" htmlFor="category">Category</label>
-        <select id="category" name="category" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">\n          <option value="">Select category…</option>\n          <option value="Mystery box">Mystery box</option>\n          <option value="Online">Online</option>\n          <option value="Event">Event</option>\n        </select>
+        <select id="category" name="category" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
+          <option value="">Select categoryâ€¦</option>
+          <option value="Mystery box">Mystery box</option>
+          <option value="Online">Online</option>
+          <option value="Event">Event</option>
+        </select>
       </div>
       <div className="md:col-span-2">
         <label className="text-xs font-medium text-slate-600" htmlFor="description">Description</label>
@@ -74,12 +82,9 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
       </div>
       <div>
         <label className="text-xs font-medium text-slate-600" htmlFor="amount">Amount</label>
-        <input id="amount" name="amount" type="number" step="0.01" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
+        <input id="amount" name="amount" type="number" step="0.01" min="0" required className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
       </div>
-      <div>
-        <label className="text-xs font-medium text-slate-600" htmlFor="currency">Currency</label>
-        <input id="currency" name="currency" defaultValue="EUR" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm" />
-      </div>
+      
       <div>
         <label className="text-xs font-medium text-slate-600" htmlFor="payment_method">Payment</label>
         <select id="payment_method" name="payment_method" defaultValue="cash" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-sm">
@@ -95,6 +100,4 @@ export default function AddIncomeForm({ events }: { events: EventOpt[] }) {
     </form>
   );
 }
-
-
 

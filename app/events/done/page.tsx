@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import BackLink from "@/components/BackLink";
+import BackLink from "@/components/common/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -69,20 +69,13 @@ async function getDoneEvents({ start, end }: { start?: string; end?: string }) {
           where: { event_id: e.id, entry_type: 'expense', category: 'Stock' },
           _sum: { amount: true },
         });
-        // Salary = explicit salaries + expenses categorized as Salary
-        try {
-          const sal = await anyPrisma.eventLedger.aggregate({
-            where: { event_id: e.id, entry_type: 'salary' as any },
-            _sum: { amount: true },
-          });
-          const toNum = (v: any) => Number((v?.toString?.() ?? v) ?? 0);
-          salary += Number((sal?._sum?.amount as any)?.toString?.() ?? sal?._sum?.amount ?? 0);
-        } catch {}
-        const salExp = await anyPrisma.eventLedger.aggregate({
-          where: { event_id: e.id, entry_type: 'expense', category: 'Salary' },
-          _sum: { amount: true },
-        });
-        salary += Number((salExp?._sum?.amount as any)?.toString?.() ?? salExp?._sum?.amount ?? 0);
+        // Salary = explicit salaries + expenses categorized as Salary (use raw SQL to avoid enum issues)
+        const salRows1: any[] = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'salary'`;
+        const salRows2: any[] = await anyPrisma.$queryRaw`SELECT COALESCE(SUM(amount),0) AS total FROM event_ledger WHERE event_id = ${e.id} AND entry_type = 'expense' AND category = 'Salary'`;
+        const sal1 = salRows1?.[0];
+        const sal2 = salRows2?.[0];
+        salary += Number((sal1?.total as any)?.toString?.() ?? sal1?.total ?? 0);
+        salary += Number((sal2?.total as any)?.toString?.() ?? sal2?.total ?? 0);
         const toNum = (v: any) => Number((v?.toString?.() ?? v) ?? 0);
         income = toNum(inc?._sum?.amount);
         expense = toNum(exp?._sum?.amount);

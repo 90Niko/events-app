@@ -40,3 +40,4 @@ export default function DeleteEventButton({ id }: { id: string | number | bigint
     </button>
   );
 }
+

@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import LedgerForm from "@/components/LedgerForm";
-import DeleteExpenseButton from "@/components/DeleteExpenseButton";
-import BackLink from "@/components/BackLink";
+import LedgerForm from "@/components/events/LedgerForm";
+import DeleteExpenseButton from "@/components/common/DeleteExpenseButton";
+import BackLink from "@/components/common/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -21,25 +21,12 @@ async function getData(id: bigint) {
 
 async function getSalaryTotalForEvent(id: bigint) {
   const anyPrisma: any = prisma as any;
-  if (anyPrisma?.eventLedger?.findMany) {
-    try {
-      let total = 0;
-      const toNum = (v: any) => Number((v?.toString?.() ?? v) ?? 0);
-      const rows = await anyPrisma.eventLedger.findMany({ where: { event_id: id, entry_type: 'salary' as any } });
-      total += rows.reduce((s: number, x: any) => s + toNum(x.amount), 0);
-      // Also sum expenses with Salary category
-      const rows2 = await anyPrisma.eventLedger.findMany({ where: { event_id: id, entry_type: 'expense', category: 'Salary' } });
-      total += rows2.reduce((s: number, x: any) => s + toNum(x.amount), 0);
-      return total;
-    } catch {
-      // fall back to raw SQL when client enum doesn't include 'salary'
-    }
-  }
+  // Use raw SQL to avoid Prisma enum validation issues for 'salary'
   const rows: any[] = await (anyPrisma).$queryRaw`SELECT 
     COALESCE((SELECT SUM(amount) FROM event_ledger WHERE event_id = ${id} AND entry_type = 'salary'), 0) +
     COALESCE((SELECT SUM(amount) FROM event_ledger WHERE event_id = ${id} AND entry_type = 'expense' AND category = 'Salary'), 0) AS total`;
   const t = Array.isArray(rows) ? (rows[0]?.total ?? 0) : (rows as any)?.total ?? 0;
-  return Number(t ?? 0);
+  return Number((t as any)?.toString?.() ?? t ?? 0);
 }
 
 export default async function LedgerPage({ params }: { params: Promise<{ id: string }> }) {

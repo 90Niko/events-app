@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import BackLink from "@/components/BackLink";
+import BackLink from "@/components/common/BackLink";
 
 export default function CreatePage() {
   const router = useRouter();

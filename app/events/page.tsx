@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import MarkDoneButton from "@/components/MarkDoneButton";
-import DeleteEventButton from "@/components/DeleteEventButton";
-import BackLink from "@/components/BackLink";
+import MarkDoneButton from "@/components/events/MarkDoneButton";
+import DeleteEventButton from "@/components/events/DeleteEventButton";
+import BackLink from "@/components/common/BackLink";
 
 export const dynamic = "force-dynamic";
 

@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
-import AddIncomeForm from "@/components/AddIncomeFormCategories";
-import PrintButton from "@/components/PrintButton";
-import ShareMenuBulk from "@/components/ShareMenuBulk";
-import DeleteExpenseButton from "@/components/DeleteExpenseButton";
-import ShareMenu from "@/components/ShareMenu";
-import BackLink from "@/components/BackLink";
+import AddIncomeForm from "@/components/income/AddIncomeFormCategories";
+import PrintButton from "@/components/common/PrintButton";
+import ShareMenuBulk from "@/components/common/ShareMenuBulk";
+import DeleteExpenseButton from "@/components/common/DeleteExpenseButton";
+import ShareMenu from "@/components/common/ShareMenu";
+import BackLink from "@/components/common/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,7 @@ async function getIncome(filters: { start?: string; end?: string; category?: str
   if (anyPrisma?.eventLedger?.findMany) {
     const where: any = { entry_type: "income" };
     if (gte || lte) where.entry_date = { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
-    if (category) where.category = { contains: category, mode: "insensitive" };
+    if (category) where.category = category;
     const entries = await anyPrisma.eventLedger.findMany({
       where,
       include: { event: { select: { name: true } } },

@@ -1,3 +1,4 @@
+// (Unused scaffold kept for reference)
 // export default function TopMenu() {
 //   return (
 //     <div className="border-b border-slate-200 bg-white/80">
