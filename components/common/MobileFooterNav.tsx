@@ -17,6 +17,7 @@ export default function MobileFooterNav() {
           <svg aria-hidden viewBox="0 0 24 24" fill="none" strokeWidth="1.6" stroke="currentColor" className="h-8 w-8">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
+          <span className={`pointer-events-none absolute -bottom-1 left-1/2 h-1 w-8 -translate-x-1/2 rounded bg-current origin-center transition-all duration-200 ease-out ${pathname === "/create" ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"}`} />
           <span className="sr-only">New Event</span>
         </a>
         <a
@@ -32,6 +33,7 @@ export default function MobileFooterNav() {
             <rect x="7.5" y="15" width="3" height="3" rx="0.5"/>
             <rect x="12.5" y="15" width="3" height="3" rx="0.5"/>
           </svg>
+          <span className={`pointer-events-none absolute -bottom-1 left-1/2 h-1 w-8 -translate-x-1/2 rounded bg-current origin-center transition-all duration-200 ease-out ${pathname === "/events" ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"}`} />
           <span className="sr-only">Upcoming Events</span>
         </a>
         <a
@@ -44,6 +46,7 @@ export default function MobileFooterNav() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2"/>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 22a10 10 0 100-20 10 10 0 000 20z"/>
           </svg>
+          <span className={`pointer-events-none absolute -bottom-1 left-1/2 h-1 w-8 -translate-x-1/2 rounded bg-current origin-center transition-all duration-200 ease-out ${pathname?.startsWith("/events/done") ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"}`} />
           <span className="sr-only">Past Events</span>
         </a>
         <a
@@ -56,6 +59,7 @@ export default function MobileFooterNav() {
             <circle cx="12" cy="12" r="9" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v8m0 0l-3-3m3 3l3-3" />
           </svg>
+          <span className={`pointer-events-none absolute -bottom-1 left-1/2 h-1 w-8 -translate-x-1/2 rounded bg-current origin-center transition-all duration-200 ease-out ${pathname?.startsWith("/expenses") ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"}`} />
           <span className="sr-only">Expenses</span>
         </a>
         <a
@@ -68,6 +72,7 @@ export default function MobileFooterNav() {
             <circle cx="12" cy="12" r="9" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V8m0 0l-3 3m3-3l3 3" />
           </svg>
+          <span className={`pointer-events-none absolute -bottom-1 left-1/2 h-1 w-8 -translate-x-1/2 rounded bg-current origin-center transition-all duration-200 ease-out ${pathname?.startsWith("/income") ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"}`} />
           <span className="sr-only">Income</span>
         </a>
         <a
@@ -81,10 +86,10 @@ export default function MobileFooterNav() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5v9l9 4.5 9-4.5v-9"/>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 12v9"/>
           </svg>
+          <span className={`pointer-events-none absolute -bottom-1 left-1/2 h-1 w-8 -translate-x-1/2 rounded bg-current origin-center transition-all duration-200 ease-out ${pathname?.startsWith("/stock") ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"}`} />
           <span className="sr-only">Stock</span>
         </a>
       </div>
     </div>
   );
 }
-
