@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import AutoPrint from "@/components/AutoPrint";
+import AutoPrint from "@/components/common/AutoPrint";
 
 export const dynamic = "force-dynamic";
 
@@ -76,4 +76,3 @@ export default async function StockPrintPage({ searchParams }: { searchParams: P
     </div>
   );
 }
-
